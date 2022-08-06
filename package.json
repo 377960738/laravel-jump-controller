@@ -2,8 +2,8 @@
     "name": "laravel-goto-controller",
     "displayName": "laravel-goto-controller",
     "description": "Alt + click to navigate from a route to a respective controller file",
-    "version": "0.0.15",
-    "publisher": "stef-k",
+    "version": "0.0.27",
+    "publisher": "pgl",
     "engines": {
         "vscode": "^1.18.0"
     },
@@ -15,7 +15,7 @@
         "theme": "light"
     },
     "activationEvents": [
-        "*"
+        "onLanguage:php"
     ],
     "icon": "images/icon.png",
     "main": "./out/extension",
@@ -33,7 +33,8 @@
         "vscode": "^1.1.33"
     },
     "dependencies": {
-        "n-readlines": "^1.0.0"
+        "n-readlines": "^1.0.0",
+        "vsce": "^2.10.0"
     },
     "license": "MIT",
     "repository": {
@@ -53,6 +54,11 @@
                     "type": "string",
                     "default": "/app/Http/Controllers",
                     "description": "Root path to the controllers folder"
+                },
+                "laravel_goto_controller.pathNamespace": {
+                    "type": "string",
+                    "default": "App\\Http\\Controllers",
+                    "description": "Http controllers namespace"
                 }
             }
         }
