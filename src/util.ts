@@ -16,17 +16,29 @@ export class LaravelControllerLink extends DocumentLink {
   }
 }
 
+var pathCtrl = workspace.getConfiguration('laravel_goto_controller').pathController; // default settings or user settings
+
+pathCtrl = pathCtrl ? pathCtrl : 'app/Http/Controllers/';
+
+// get pathNamespace from config.json
+let pathNamespace = workspace.getConfiguration('laravel_goto_controller').pathNamespace;
+
+pathNamespace = pathNamespace ? pathNamespace : 'App\\Http\\Controllers';
+
 /**
  * Finds the controler's filepath
  * @param text
  * @param document
  */
 export function getFilePath(text: string, document: TextDocument) {
-  let pathCtrl = '/app/Http/Controllers'; // initial pathController value in package.json
-  pathCtrl = workspace.getConfiguration('laravel_goto_controller').pathController; // default settings or user settings
+
   let filePath = workspace.getWorkspaceFolder(document.uri).uri.fsPath + pathCtrl;
+
   // split the method (if not a resource controller) from the controller name
   let controllerFileName = text.replace(/\./g, '/').replace(/\"|\'/g, '') + '.php';
+
+  // replace the http controllers namespace to empty string
+  controllerFileName = controllerFileName.replace(pathNamespace, '').replace('\\\\', '');
 
   if (controllerFileName.includes('\\')) {
     controllerFileName = controllerFileName.replace(/\\/g, '\/');
