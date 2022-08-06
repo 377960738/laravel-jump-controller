@@ -1,8 +1,9 @@
-# No longer maintained
+# Fork from stef-k/laravel-goto-controller 
+The original maintainer [no longer maintains](https://github.com/stef-k/laravel-goto-controller/blob/master/README.md) 
 
-I wanted to say that the extension is no longer maintained. I do not code often and if/when I code it is not on PHP - Laravel.
+Now, It'sEnhanced recognition ability,The effect is as follows: 
+![image](https://user-images.githubusercontent.com/25890436/183229170-7aedfdf0-4e7f-4421-a9d4-f094ab33c0d8.png)
 
-The last couple of years commits where mostly for community's sake but since I am out of the loop I cannot commit to this project.
 
 ## laravel-goto-controller README
 
