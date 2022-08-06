@@ -10,49 +10,59 @@ export class LinkProvider implements DocumentLinkProvider {
   public provideDocumentLinks (document: TextDocument, token: CancellationToken): ProviderResult<DocumentLink[]> {
     let documentLinks = [];
     let index = 0;
-    let reg = /(['"])[^'"]*\1/g;
+    let reg = /((\:\:)|(->))(((get|post|any|resource|put|path|delete|options)\()|(match\(\s?\[(['"][a-zA-Z]+['"],?\s?)+\],))\s?['"]([a-zA-Z\d_/]+(\{[a-zA-Z\d_/]+\??\})?)?['"],\s?((['"][a-zA-Z\d_\\]+(@[a-zA-Z\d_]+){0,1}['"])|(\[(([a-zA-Z\d_\\]+::class)|(['"][a-zA-Z\d_\\]+['"])),\s?['"][a-zA-Z\d_]+['"]\])|([a-zA-Z\d_\\]+::class))\s?\)/;
     while (index < document.lineCount) {
+
+      let choice = [];
+
       let line = document.lineAt(index);
       let result = line.text.match(reg);
 
-      if (result != null) {
-        for (let item of result) {
-          let splitted = item.replace(/\"|\'/g, '').split('@');
-          if (splitted.length != 2) {
-            //Search for the Controller keyword in the string name
-            if (splitted[0].includes('Controller')) {
-              //In this case, because there is no method definition in routes
-              //we send it to the index method by default
-              splitted[1] = 'index';
-            } else {
-              continue;
-            }
-          }
+      let currentLine = (result === null) ? '' : result[0];
 
-          let filePath = util.getFilePath(splitted[0], document);
-
-          if (filePath != null) {
-            let start = new Position(line.lineNumber, line.text.indexOf(item) + 1);
-            let end = start.translate(0, item.length - 2);
-            let documentLink = new util.LaravelControllerLink(new Range(start, end), filePath, splitted[0], splitted[1]);
-            documentLinks.push(documentLink);
-          }
-        }
+      // turn the match method preg to a usual string
+      if (currentLine.indexOf('match(') !== -1) {
+        //rewrite string
+        currentLine = currentLine.replace(/match\(\s?\[(['"][a-zA-Z]+['"],?\s?)+\],/, 'match(');
       }
-      // check for ClassName::class notation
-      if (line.text.includes('::class')) {
-        let controllerName = line.text.substring(line.text.lastIndexOf('[') + 1, line.text.lastIndexOf('::class'))
-        let functionName = line.text.split('::class, \'')[1].substring(0, line.text.split('::class, \'')[1].lastIndexOf('\''))
-        let functionCharacterStartsAt = line.text.lastIndexOf(line.text.split('::class, \'')[1][0])
-        let filePath = util.getFilePath(controllerName, document);
 
-        if (filePath != null) {
-          let start = new Position(line.lineNumber, functionCharacterStartsAt);
-          let end = start.translate(0, functionName.length);
-          let documentLink = new util.LaravelControllerLink(new Range(start, end), filePath, controllerName, functionName);
-          documentLinks.push(documentLink);
+      // match controller and method
+      let splitted = currentLine.split(',').splice(1);
+
+      if (splitted.length == 1) {
+
+        // match string @
+        if (splitted[0].indexOf('@') > -1) {
+          splitted = splitted[0].replace(/['"\s\)]/g, '').split('@')
+          choice = [line.text.indexOf(splitted[0]), splitted.join('@').length];
+        } else if(splitted[0].indexOf('::class') > -1) {
+          // match string ::class
+          splitted = splitted[0].replace(/['"\s\)]/g, '').split('::class')
+          splitted[1] = 'index'
+          choice = [line.text.indexOf(splitted[0]), splitted[0].length];
+        } else {
+          // match resource mod
+          splitted[0] = splitted[0].replace(/['"\s\)]/g, '')
+          splitted[1] = 'index'
+          choice = [line.text.indexOf(splitted[0]), splitted[0].length];
         }
+      } else if(splitted.length == 2) {
+        // match controller and method
+        splitted[0] = splitted[0].replace(/[\['"\s]/g, '').replace('::class', '')
+        let func_offset = line.text.indexOf(splitted[1].trim()) + 1
+        splitted[1] = splitted[1].replace(/['"\s\]\)]/g, '')
+        choice = [func_offset, splitted[1].length];
       }
+
+      let filePath = (splitted.length > 1) ? util.getFilePath(splitted[0], document) : null;
+
+      if (filePath != null) {
+        let start = new Position(line.lineNumber, choice[0]);
+        let end = start.translate(0, choice[1]);
+        let documentLink = new util.LaravelControllerLink(new Range(start, end), filePath, splitted[0], splitted[1]);
+        documentLinks.push(documentLink);
+      }
+
       index++;
     }
     return documentLinks;
