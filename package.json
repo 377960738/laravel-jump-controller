@@ -39,12 +39,12 @@
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/stef-k/laravel-goto-controller.git"
+        "url": "https://github.com/377960738/laravel-goto-controller.git"
     },
     "bugs": {
-        "url": "https://github.com/stef-k/laravel-goto-controller/issues"
+        "url": "https://github.com/377960738/laravel-goto-controller/issues"
     },
-    "homepage": "https://github.com/stef-k/laravel-goto-controller/blob/master/README.md",
+    "homepage": "https://github.com/377960738/laravel-goto-controller/blob/master/README.md",
     "contributes": {
         "configuration": {
             "type": "object",
