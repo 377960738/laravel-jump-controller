@@ -2,7 +2,7 @@
     "name": "laravel-jump-controller",
     "displayName": "laravel-jump-controller",
     "description": "Alt + click to navigate from a route to a respective controller file",
-    "version": "0.0.31",
+    "version": "0.0.32",
     "publisher": "pgl",
 	"author": {
 		"name": "pgl"

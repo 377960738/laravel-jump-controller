@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.0.32 - March, 27 2023
+
+* The route address can identify the short horizontal line [#2](https://github.com/377960738/laravel-jump-controller/issues/2#issue-1528608335)
+
 ## 0.0.31 - September, 02 2022
 
 * Fix : When Configuration information is invalid. The default path information cannot be used

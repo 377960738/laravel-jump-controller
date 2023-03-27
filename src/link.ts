@@ -10,7 +10,7 @@ export class LinkProvider implements DocumentLinkProvider {
     public provideDocumentLinks(document: TextDocument, token: CancellationToken): ProviderResult<DocumentLink[]> {
         let documentLinks = [];
         let index = 0;
-        let reg = /((\:\:)|(->))(((get|post|any|resource|put|path|delete|options)\()|(match\(\s?\[(['"][a-zA-Z]+['"],?\s?)+\],))\s?['"](\/?([a-zA-Z\d_.#@\/]|(\{[a-zA-Z\d_]+(\}|\?\})))*\/?)?(\?[a-zA-Z\d_]+\=[\s\S]*)?['"],\s?((['"][a-zA-Z\d_\\]+(@[a-zA-Z\d_]+){0,1}['"])|(\[(([a-zA-Z\d_\\]+::class)|(['"][a-zA-Z\d_\\]+['"])),\s?['"][a-zA-Z\d_]+['"]\])|([a-zA-Z\d_\\]+::class))\s?\)/;
+        let reg = /((\:\:)|(->))(((get|post|any|resource|put|path|delete|options)\()|(match\(\s?\[(['"][a-zA-Z]+['"],?\s?)+\],))\s?['"](\/?([a-zA-Z\d_\-.#@\/]|(\{[a-zA-Z\d_\-]+(\}|\?\})))*\/?)?(\?[a-zA-Z\d_]+\=[\s\S]*)?['"],\s?((['"][a-zA-Z\d_\\]+(@[a-zA-Z\d_]+){0,1}['"])|(\[(([a-zA-Z\d_\\]+::class)|(['"][a-zA-Z\d_\\]+['"])),\s?['"][a-zA-Z\d_]+['"]\])|([a-zA-Z\d_\\]+::class))\s?\)/;
         while (index < document.lineCount) {
 
             let choice = [];
