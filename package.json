@@ -1,15 +1,27 @@
 {
-    "name": "laravel-goto-controller",
-    "displayName": "laravel-goto-controller",
+    "name": "laravel-jump-controller",
+    "displayName": "laravel-jump-controller",
     "description": "Alt + click to navigate from a route to a respective controller file",
-    "version": "0.0.27",
+    "version": "0.0.31",
     "publisher": "pgl",
+	"author": {
+		"name": "pgl"
+	},
     "engines": {
         "vscode": "^1.18.0"
     },
-    "categories": [
-        "Other"
-    ],
+	"categories": [
+		"Other"
+	],
+	"keywords": [
+		"laravel",
+		"php",
+		"route",
+        "goto",
+        "jump",
+        "controller",
+        "laravel-jump-controller"
+	],
     "galleryBanner": {
         "color": "#FF544A",
         "theme": "light"
@@ -39,28 +51,29 @@
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/377960738/laravel-goto-controller.git"
+        "url": "https://github.com/377960738/laravel-jump-controller.git"
     },
     "bugs": {
-        "url": "https://github.com/377960738/laravel-goto-controller/issues"
+        "url": "https://github.com/377960738/laravel-jump-controller/issues"
     },
-    "homepage": "https://github.com/377960738/laravel-goto-controller/blob/master/README.md",
+    "homepage": "https://github.com/377960738/laravel-jump-controller/blob/master/README.md",
     "contributes": {
         "configuration": {
             "type": "object",
-            "title": "Laravel goto controller configuration",
+            "title": "Laravel jump controller configuration",
             "properties": {
-                "laravel_goto_controller.pathController": {
+                "laravel_jump_controller.pathController": {
                     "type": "string",
                     "default": "/app/Http/Controllers",
                     "description": "Root path to the controllers folder"
                 },
-                "laravel_goto_controller.pathNamespace": {
+                "laravel_jump_controller.pathNamespace": {
                     "type": "string",
                     "default": "App\\Http\\Controllers",
                     "description": "Http controllers namespace"
                 }
             }
         }
-    }
+    },
+    "qna": "marketplace"
 }

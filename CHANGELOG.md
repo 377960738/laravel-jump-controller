@@ -1,5 +1,18 @@
 # Change Log
 
+## 0.0.31 - September, 02 2022
+
+* Fix : When Configuration information is invalid. The default path information cannot be used
+
+## 0.0.30 - September, 02 2022
+
+* Increase accuracy (Routes with Parameters [#1](https://github.com/377960738/laravel-goto-controller/issues/1#issue-1357138344))
+
+## 0.0.29 - August, 06 2022
+
+* Increase accuracy
+* Add namespace Settings
+
 ## 0.0.15 - September, 19 2021
 
 * regression caused by v0.0.14
