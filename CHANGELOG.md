@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.0.33 - April, 20 2023
+
+* Read the composer.json file and identify the psr-4 aotoload relationship
+
 ## 0.0.32 - March, 27 2023
 
 * The route address can identify the short horizontal line [#2](https://github.com/377960738/laravel-jump-controller/issues/2#issue-1528608335)

@@ -2,7 +2,7 @@
     "name": "laravel-jump-controller",
     "displayName": "laravel-jump-controller",
     "description": "Alt + click to navigate from a route to a respective controller file",
-    "version": "0.0.32",
+    "version": "0.0.33",
     "publisher": "pgl",
 	"author": {
 		"name": "pgl"
@@ -64,7 +64,7 @@
             "properties": {
                 "laravel_jump_controller.pathController": {
                     "type": "string",
-                    "default": "/app/Http/Controllers",
+                    "default": "app/Http/Controllers",
                     "description": "Root path to the controllers folder"
                 },
                 "laravel_jump_controller.pathNamespace": {

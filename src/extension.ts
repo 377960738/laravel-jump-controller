@@ -11,7 +11,7 @@ export function activate(context: ExtensionContext) {
         provideHover(document, position, token) {
             let linkRange = document.getWordRangeAtPosition(position, REG);
             if (linkRange) {
-                let filePath = util.getFilePath(document.getText(linkRange), document);
+                let filePath = util.getFilePath(document.getText(linkRange), document, {});
                 let workspaceFolder = workspace.getWorkspaceFolder(document.uri);
                 if (filePath != null) {
                     return new Hover(workspaceFolder.name + filePath.replace(workspaceFolder.uri.fsPath, ''));

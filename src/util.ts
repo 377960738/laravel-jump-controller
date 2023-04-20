@@ -18,7 +18,7 @@ export class LaravelControllerLink extends DocumentLink {
 
 var pathCtrl = workspace.getConfiguration('laravel_jump_controller').pathController; // default settings or user settings
 
-pathCtrl = pathCtrl ? pathCtrl : '/app/Http/Controllers/';
+pathCtrl = pathCtrl ? pathCtrl : 'app/Http/Controllers';
 
 // get pathNamespace from config.json
 let pathNamespace = workspace.getConfiguration('laravel_jump_controller').pathNamespace;
@@ -30,28 +30,39 @@ pathNamespace = pathNamespace ? pathNamespace : 'App\\Http\\Controllers';
  * @param text
  * @param document
  */
-export function getFilePath(text: string, document: TextDocument) {
+export function getFilePath(text: string, document: TextDocument, composerAutoLoadPSR: Object) {
 
-    let filePath = workspace.getWorkspaceFolder(document.uri).uri.fsPath + pathCtrl;
+    let workspaceFolder = workspace.getWorkspaceFolder(document.uri).uri.fsPath;
 
-    // split the method (if not a resource controller) from the controller name
-    let controllerFileName = text.replace(/\./g, '/').replace(/\"|\'/g, '') + '.php';
+    let controllerFileName = text + '.php';
 
     // replace the http controllers namespace to empty string
-    controllerFileName = controllerFileName.replace(pathNamespace, '').replace('\\\\', '');
-
-    if (controllerFileName.includes('\\')) {
-        controllerFileName = controllerFileName.replace(/\\/g, '\/');
+    if (controllerFileName.indexOf(pathNamespace) === 0) {
+        controllerFileName = controllerFileName.slice((pathNamespace + '\\').replace(/\\\\/g, '\\').length);
     }
 
-    let targetPath = filePath + '/' + controllerFileName;
+    if (controllerFileName.charAt(0) === "\\") {
+        for (let _i in composerAutoLoadPSR) {
+            if (controllerFileName.indexOf('\\' + _i) === 0) {
+                controllerFileName = controllerFileName.slice(_i.length + 1 /** include the leading backslash */);
+                controllerFileName = (composerAutoLoadPSR[_i] + '/').replace(/\/\//g, '/') + controllerFileName;
+                break;
+            }
+        }
+    } else {
+        controllerFileName = (pathCtrl + '/').replace(/\/\//g, '/') + controllerFileName;
+    }
+
+    controllerFileName = controllerFileName.replace(/\\/g, '/');
+
+    let targetPath = (workspaceFolder + '/' + controllerFileName).replace(/\/\//g, '/');
 
     if (fs.existsSync(targetPath)) {
         return targetPath;
     }
-    let dirItems = fs.readdirSync(filePath);
+    let dirItems = fs.readdirSync(workspaceFolder);
     for (let item of dirItems) {
-        targetPath = filePath + '/' + item + '/' + controllerFileName;
+        targetPath = workspaceFolder + '/' + item + '/' + controllerFileName;
         if (fs.existsSync(targetPath)) {
             return targetPath;
         }
