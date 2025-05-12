@@ -1,5 +1,28 @@
 # Change Log
 
+## 0.0.34 - May, 12 2025
+
+* Add some additional rules `apiResource` `singleton` `apiSingleton`
+* match callback express like `'Class::action'` format [#4](https://github.com/377960738/laravel-jump-controller/issues/4#issue-1939487122)
+* Multi-line content format support
+
+  ```php
+  // cover
+  Route::get(
+      '/user/profile',
+      [UserProfileController::class, 'show']
+  )->name('profile');
+
+  // not covered  (There's no need. I guess you wouldn't do that either)
+  Route::any(
+      '/',
+      [
+          Home\Index::class,
+          'index',
+      ]
+  );
+  ```
+
 ## 0.0.33 - April, 20 2023
 
 * Read the composer.json file and identify the psr-4 aotoload relationship

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
 	<Metadata>
-		<Identity Language="en-US" Id="laravel-jump-controller" Version="0.0.33" Publisher="pgl" />
+		<Identity Language="en-US" Id="laravel-jump-controller" Version="0.0.34" Publisher="pgl" />
 		<DisplayName>laravel-jump-controller</DisplayName>
 		<Description xml:space="preserve">Alt + click to navigate from a route to a respective controller file</Description>
 		<Tags>laravel,php,route,goto,controller,jump</Tags>

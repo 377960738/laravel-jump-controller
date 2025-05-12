@@ -2,26 +2,26 @@
     "name": "laravel-jump-controller",
     "displayName": "laravel-jump-controller",
     "description": "Alt + click to navigate from a route to a respective controller file",
-    "version": "0.0.33",
+    "version": "0.0.34",
     "publisher": "pgl",
-	"author": {
-		"name": "pgl"
-	},
+    "author": {
+        "name": "pgl"
+    },
     "engines": {
         "vscode": "^1.18.0"
     },
-	"categories": [
-		"Other"
-	],
-	"keywords": [
-		"laravel",
-		"php",
-		"route",
+    "categories": [
+        "Other"
+    ],
+    "keywords": [
+        "laravel",
+        "php",
+        "route",
         "goto",
         "jump",
         "controller",
         "laravel-jump-controller"
-	],
+    ],
     "galleryBanner": {
         "color": "#FF544A",
         "theme": "light"

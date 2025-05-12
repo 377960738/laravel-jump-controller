@@ -29,7 +29,7 @@ export class LinkProvider implements DocumentLinkProvider {
 
         let documentLinks = [];
         let index = 0;
-        let reg = /((\:\:)|(->))(((get|post|put|patch|delete|options|any|resource|apiResource|singleton|apiSingleton)\()|(match\(\s?\[(['"][a-zA-Z]+['"],?\s?)+\],))\s?['"](\/?([a-zA-Z\d_\-.#@\/]|(\{[a-zA-Z\d_\-]+(\}|\?\})))*\/?)?(\?[a-zA-Z\d_]+\=[\s\S]*)?['"],\s?((['"][a-zA-Z\d_\\]+(@[a-zA-Z\d_]+){0,1}['"])|(\[(([a-zA-Z\d_\\]+::class)|(['"][a-zA-Z\d_\\]+['"])),\s?['"][a-zA-Z\d_]+['"]\])|([a-zA-Z\d_\\]+::class))\s?\)/;
+        let reg = /(::|->)((get|post|put|patch|delete|options|any|resource|apiResource|singleton|apiSingleton)\(\s*|match\(\s*\[(['"][a-zA-Z]+['"],?\s*)+\]\s*,)\s*['"](\/?([a-zA-Z\d_\-.#@\/]|(\{[a-zA-Z\d_\-]+(\}|\?\})))*\/?)?(\?[a-zA-Z\d_]+\=[\s\S]*)?['"]\s*,\s*(['"][a-zA-Z\d_\\]+(@[a-zA-Z\d_]+|::[a-zA-Z\d_]+)?['"]|\[([a-zA-Z\d_\\]+::class|['"][a-zA-Z\d_\\]+['"]),\s*['"][a-zA-Z\d_]+['"]\]|[a-zA-Z\d_\\]+::class)\s*\)/;
         while (index < document.lineCount) {
 
             let choice = [];
@@ -54,11 +54,17 @@ export class LinkProvider implements DocumentLinkProvider {
                 if (splitted[0].indexOf('@') > -1) {
                     splitted = splitted[0].replace(/['"\s\);]/g, '').split('@')
                     choice = [line.text.indexOf(splitted[0]), splitted.join('@').length];
-                } else if (splitted[0].indexOf('::class') > -1) {
+                } else if (splitted[0].indexOf("::") > -1) {
+                    splitted = splitted[0].replace(/['"\s\);]/g, "").split("::");
+
                     // match string ::class
-                    splitted = splitted[0].replace(/['"\s\);]/g, '').split('::class')
-                    splitted[1] = 'index'
-                    choice = [line.text.indexOf(splitted[0]), splitted[0].length];
+                    if (splitted[1] === "class") {
+                        splitted[1] = "index";
+                    } else {
+                        // compat: match hyperf framework, nothing to do
+                    }
+
+                    choice = [line.text.indexOf(splitted[0]), splitted.join('::').length];
                 } else {
                     // match resource mod
                     splitted[0] = splitted[0].replace(/['"\s\);]/g, '')
