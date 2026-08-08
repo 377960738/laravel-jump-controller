@@ -15,9 +15,9 @@ VS Code 1.85 is intentionally chosen as a modern but not bleeding-edge runtime f
 
 ## Tool version policy
 
-The newest dependency is selected when it supports Node 18.18.2. Some current tools have already dropped Node 18:
+The newest dependency is selected when it supports Node 18.18.2, except for a security-patched development-only Markdown dependency discussed below. Some current tools have already dropped Node 18:
 
-- `@vscode/vsce` 3.x requires Node 20. VSCE 2.25+ also introduced Azure identity ranges whose current transitive releases require newer Node versions, so the project pins the newest verified pre-identity 2.x line for a clean Node 18 installation.
+- `@vscode/vsce` 3.x requires Node 20. VSCE 2.25+ also introduced Azure identity ranges whose current transitive releases require newer Node versions, so the project pins the newest verified pre-identity 2.x line that executes the complete package path on Node 18.
 - the newest `@vscode/test-electron` requires Node 22, so the project pins a Node 18-compatible 2.x version.
 
 Runtime types are pinned to VS Code 1.85 rather than the newest API. This prevents accidental use of an API unavailable at the declared editor floor.
@@ -52,7 +52,7 @@ The Node 18 run initially exposed an incompatible transitive `cheerio`/`undici` 
 
 The Node 18-compatible VSCE line also accepts an old `markdown-it` range. The project overrides it to a security-fixed current version; packaging and the Node matrix verify that the newer API remains compatible with VSCE's usage.
 
-An npm official-registry audit reported zero known vulnerabilities after these overrides. The security override currently carries an `entities` package engine declaration newer than Node 18, but the complete packaging path has been executed successfully on Node 18.18.2; this is isolated to the development-only Markdown rendering dependency and is not shipped in the bundled extension.
+An npm official-registry audit reported zero known vulnerabilities after these overrides. The security override currently carries an `entities` package engine declaration newer than Node 18, so `npm ci` emits one engine warning there; nevertheless the complete packaging path has been executed successfully on Node 18.18.2. This is isolated to the development-only Markdown rendering dependency and is not shipped in the bundled extension.
 
 Because VSCE 2.x predates npm 10's dependency-tree output, packaging explicitly uses `--no-dependencies`. This is correct for this extension because esbuild bundles the only runtime package (`php-parser`) into `dist/extension.js`.
 
