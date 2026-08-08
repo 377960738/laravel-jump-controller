@@ -7,6 +7,8 @@ const options = {
   external: ['vscode'],
   format: 'cjs',
   platform: 'node',
+  // VS Code 1.85 embeds Node 18. The build tool runs on Node 22+, while the
+  // extension output intentionally retains the older runtime target.
   target: 'node18',
   outfile: 'dist/extension.js',
   sourcemap: true,

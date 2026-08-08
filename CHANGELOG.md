@@ -1,5 +1,16 @@
 # Change Log
 
+## 0.2.0 - August 08, 2026 — Node.js 22 build release
+
+This is the recommended package for normal installation. Building from source now requires Node.js 22 or newer and uses the current TypeScript, VSCE, and VS Code test toolchain. VS Code runtime compatibility remains `1.85.0` or newer because the extension bundle deliberately targets the Node runtime embedded by that editor baseline.
+
+Users installing a VSIX should normally choose `0.2.0`. Choose `0.1.0` only when the extension itself must be rebuilt or maintained using Node.js 18.18.2. Both packages contain the same Laravel navigation fixes listed below.
+
+* Raise the minimum source-build runtime to Node.js 22.
+* Upgrade TypeScript to 7.x, `@vscode/vsce` to 3.x, and `@vscode/test-electron` to 3.x.
+* Remove legacy Node 18 packaging dependency overrides.
+* Keep `@types/vscode` and the generated extension bundle compatible with VS Code 1.85.0.
+
 ## 0.1.0 - August 08, 2026 — VS Code 1.85 compatibility release
 
 This is the final release built with Node.js 18.18.2 compatibility and supporting VS Code 1.85.0 or newer. Choose this package when an older VS Code 1.85+ development environment must be retained. The next feature release requires Node.js 22 to build, while extension runtime compatibility is declared separately.

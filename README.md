@@ -36,7 +36,7 @@ Composer PSR-4 is detected automatically and takes precedence. Existing or legac
 
 Settings are resource scoped and update without reloading VS Code. Nested Laravel projects use their nearest `composer.json`.
 
-For a broad set of runnable navigation examples, open [`demo/laravel-app`](demo/laravel-app).
+For a broad set of runnable navigation examples, open the [demo Laravel application](https://github.com/377960738/laravel-jump-controller/tree/master/demo/laravel-app).
 
 ## Safety
 
@@ -44,14 +44,14 @@ The extension performs static PHP analysis and does not boot Laravel or execute 
 
 ## Development
 
-Requirements: Node.js 18.18.2 or newer and npm.
+Requirements for the current source tree: Node.js 22 or newer and npm. The archived `0.1.0` compatibility VSIX is the final package that can be rebuilt with Node.js 18.18.2.
 
 ```bash
 npm ci --ignore-scripts
 npm run check
 ```
 
-Node 18.18.2, 20 and 22 are covered by the CI matrix. See [design](docs/DESIGN.md), [compatibility](docs/COMPATIBILITY.md), and [roadmap](docs/ROADMAP.md).
+Node 22 and 24 are covered by the current CI matrix. See [design](docs/DESIGN.md), [compatibility](docs/COMPATIBILITY.md), and [roadmap](docs/ROADMAP.md).
 
 ## License
 

@@ -2,7 +2,7 @@
   "name": "laravel-jump-controller",
   "displayName": "Laravel Jump Controller",
   "description": "Navigate from Laravel routes to controller classes and methods.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "pgl",
   "author": { "name": "pgl" },
   "license": "MIT",
@@ -14,7 +14,7 @@
   "homepage": "https://github.com/377960738/laravel-jump-controller#readme",
   "engines": {
     "vscode": "^1.85.0",
-    "node": ">=18.18.2"
+    "node": ">=22.0.0"
   },
   "categories": ["Programming Languages", "Other"],
   "keywords": ["laravel", "php", "route", "goto", "jump", "controller"],
@@ -38,18 +38,12 @@
     "php-parser": "3.7.0"
   },
   "devDependencies": {
-    "@types/node": "18.19.120",
+    "@types/node": "22.20.1",
     "@types/vscode": "1.85.0",
-    "@vscode/test-electron": "2.5.2",
-    "@vscode/vsce": "2.24.0",
+    "@vscode/test-electron": "3.1.0",
+    "@vscode/vsce": "3.9.2",
     "esbuild": "0.28.1",
-    "typescript": "5.9.3"
-  },
-  "overrides": {
-    "@vscode/vsce": {
-      "cheerio": "1.0.0-rc.12",
-      "markdown-it": "15.0.0"
-    }
+    "typescript": "7.0.2"
   },
   "contributes": {
     "configuration": {
