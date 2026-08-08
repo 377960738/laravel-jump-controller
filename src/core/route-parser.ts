@@ -84,7 +84,7 @@ function parseRouteTargets(
     if (!resources || resources.kind !== 'array') return [];
     return nodeArray(resources.items).flatMap((item) => {
       const value = isNode(item.value) ? item.value : undefined;
-      const classTarget = value ? classConstantTarget(value, aliases) : undefined;
+      const classTarget = value ? controllerTarget(value, aliases) : undefined;
       return classTarget
         ? [{ controller: classTarget.name, kind: 'resource' as const, controllerRange: classTarget.range }]
         : [];
@@ -96,7 +96,7 @@ function parseRouteTargets(
   if (!action) return [];
 
   if (RESOURCE_METHODS.has(method)) {
-    const classTarget = classConstantTarget(action, aliases);
+    const classTarget = controllerTarget(action, aliases);
     if (!classTarget) return [];
     return [{ controller: classTarget.name, kind: 'resource', controllerRange: classTarget.range }];
   }
@@ -220,6 +220,16 @@ function classConstantTarget(
   const nameNode = node.what;
   if (nameNode.kind !== 'name' || typeof nameNode.name !== 'string' || !nameNode.loc) return undefined;
   return { name: resolveName(nameNode.name, aliases), range: rangeOf(nameNode.loc) };
+}
+
+function controllerTarget(
+  node: PhpNode,
+  aliases: ReadonlyMap<string, string>,
+): { name: string; range: OffsetRange } | undefined {
+  const classConstant = classConstantTarget(node, aliases);
+  if (classConstant) return classConstant;
+  const string = stringTarget(node);
+  return string ? { name: resolveName(string.value, aliases), range: string.range } : undefined;
 }
 
 function stringTarget(node: PhpNode): { value: string; range: OffsetRange } | undefined {

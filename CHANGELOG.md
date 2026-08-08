@@ -1,5 +1,11 @@
 # Change Log
 
+## Unreleased
+
+* Resolve legacy quoted controller class names in resource declarations, including fluent routes such as `Route::name(...)->resource(..., 'V1_1\\Api\\FoundFlow\\Collection')`.
+* Cache fully resolved document links by URI and route contents so switching away from and back to an unchanged route file does not repeat controller discovery and symbol analysis.
+* Refresh visible route links after saved controller and filesystem changes. Unsaved controller edits deliberately do not affect route links.
+
 ## 0.2.0 - August 08, 2026 — Node.js 22 build release
 
 This is the recommended package for normal installation. Building from source now requires Node.js 22 or newer and uses the current TypeScript, VSCE, and VS Code test toolchain. VS Code runtime compatibility remains `1.85.0` or newer because the extension bundle deliberately targets the Node runtime embedded by that editor baseline.
