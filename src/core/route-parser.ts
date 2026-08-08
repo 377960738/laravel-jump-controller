@@ -56,6 +56,12 @@ function visit(
       return;
     }
 
+    const constrainedResource = parseResourceOnly(node, aliases);
+    if (constrainedResource) {
+      targets.push(...constrainedResource);
+      return;
+    }
+
     const routeCall = getRouteCall(node, aliases);
     if (routeCall && ROUTE_METHODS.has(routeCall.method)) {
       targets.push(...parseRouteTargets(node, routeCall.method, groupController, aliases));
@@ -70,6 +76,35 @@ function visit(
       visit(value, groupController, aliases, targets);
     }
   }
+}
+
+function parseResourceOnly(call: PhpNode, aliases: ReadonlyMap<string, string>): RouteTarget[] | undefined {
+  if (!isNode(call.what) || call.what.kind !== 'propertylookup' || identifierName(call.what.offset) !== 'only') return undefined;
+  const resourceCall = isNode(call.what.what) && call.what.what.kind === 'call' ? call.what.what : undefined;
+  if (!resourceCall) return undefined;
+  const routeCall = getRouteCall(resourceCall, aliases);
+  if (!routeCall || !RESOURCE_METHODS.has(routeCall.method)) return undefined;
+  const resourceArguments = nodeArray(resourceCall.arguments);
+  const controller = resourceArguments[1] ? controllerTarget(resourceArguments[1], aliases) : undefined;
+  if (!controller) return [];
+  const onlyArguments = nodeArray(call.arguments);
+  const methodNodes = onlyArguments.length === 1 && onlyArguments[0]?.kind === 'array'
+    ? nodeArray(onlyArguments[0].items).map((item) => isNode(item.value) ? item.value : item)
+    : onlyArguments;
+  const methods = methodNodes.flatMap((node) => {
+    const method = stringTarget(node);
+    return method ? [{
+      controller: controller.name,
+      method: method.value,
+      kind: 'resource' as const,
+      controllerRange: method.range,
+      methodRange: method.range,
+    }] : [];
+  });
+  return [
+    { controller: controller.name, kind: 'resource', controllerRange: controller.range },
+    ...methods,
+  ];
 }
 
 function parseRouteTargets(

@@ -9,6 +9,7 @@
 * Render successful matches with editor decorations instead of document links, allowing atomic refreshes without clearing and rebuilding the whole route document's underline state.
 * Follow imported, namespace-relative and fully-qualified parent classes through Composer PSR-4 when a route method is inherited, and jump to the actual parent declaration.
 * Invalidate navigation synchronously after Controller saves and validate cached files by modification time and size before definitions, preventing stale jumps during filesystem-watcher races.
+* Resolve and underline individual resource methods named in chained `only([...])` or variadic `only(...)` constraints.
 
 ## 0.2.0 - August 08, 2026 — Node.js 22 build release
 
