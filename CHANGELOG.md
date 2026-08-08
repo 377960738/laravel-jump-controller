@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.2.3 - August 08, 2026
+
+* Invalidate navigation synchronously after Controller saves and validate cached files by modification time and size before definitions, preventing stale jumps during filesystem-watcher races.
+* Resolve and underline individual resource methods named in chained `only([...])` or variadic `only(...)` constraints.
+
 ## 0.2.2 - August 08, 2026
 
 * Remove stale method underlines and definitions when the referenced controller method no longer exists; class navigation remains available.
@@ -16,27 +21,12 @@
 
 This is the recommended package for normal installation. Building from source now requires Node.js 22 or newer and uses the current TypeScript, VSCE, and VS Code test toolchain. VS Code runtime compatibility remains `1.85.0` or newer because the extension bundle deliberately targets the Node runtime embedded by that editor baseline.
 
-Users installing a VSIX should normally choose `0.2.0`. Choose `0.1.0` only when the extension itself must be rebuilt or maintained using Node.js 18.18.2. Both packages contain the same Laravel navigation fixes listed below.
+The former experimental 0.1.x compatibility line has been retired. Version 0.2.x is the single maintained release line.
 
 * Raise the minimum source-build runtime to Node.js 22.
 * Upgrade TypeScript to 7.x, `@vscode/vsce` to 3.x, and `@vscode/test-electron` to 3.x.
 * Remove legacy Node 18 packaging dependency overrides.
 * Keep `@types/vscode` and the generated extension bundle compatible with VS Code 1.85.0.
-
-## 0.1.0 - August 08, 2026 — VS Code 1.85 compatibility release
-
-This is the final release built with Node.js 18.18.2 compatibility and supporting VS Code 1.85.0 or newer. Choose this package when an older VS Code 1.85+ development environment must be retained. The next feature release requires Node.js 22 to build, while extension runtime compatibility is declared separately.
-
-* Replace the single-line route regular expression with structural PHP AST parsing.
-* Use native Definition and Hover providers with exact source ranges, while retaining successful-match underlines through a shared Document Link provider.
-* Support multiline actions, imports and aliases, invokable controllers, nested controller groups, resource/singleton variants, plural resources, fluent resource calls, and legacy callable strings.
-* Fix fluent resource declarations such as `Route::name(...)->resource(...)`.
-* Resolve the complete controller group chain reported in [Issue #3](https://github.com/377960738/laravel-jump-controller/issues/3).
-* Correct Composer `autoload-dev` handling and support PSR-4 path arrays and nested projects.
-* Replace synchronous Node filesystem scans with URI-based VS Code workspace I/O and caches.
-* Modernize the npm-only Node 18.18.2+ / TypeScript / esbuild / VS Code toolchain.
-* Add strict type checking, route/parser/resolver tests, package validation, and Node 18/20/22 CI.
-* Add a comprehensive demo Laravel project covering supported navigation scenarios.
 
 ## 0.0.34 - May, 12 2025
 

@@ -44,7 +44,7 @@ The resolver walks from the route document toward its owning workspace root and 
 
 Method resolution first inspects the concrete Controller. If the method is absent, it resolves the class `extends` declaration through PHP namespace and import rules, then follows Composer PSR-4 recursively until it finds the declaring parent. Every traversed parent file is registered in the reverse dependency index, and a visited-class set prevents malformed circular inheritance from hanging navigation. Trait methods and runtime magic dispatch are intentionally separate future cases.
 
-All workspace I/O uses `workspace.fs`. Parsed route documents, resolved decorations and project discovery are cached by URI and contents. Saved Controller changes invalidate only dependent route documents through a reverse dependency index. Configuration and Composer mapping changes clear the broader project caches because they can alter every class mapping.
+All workspace I/O uses `workspace.fs`. Parsed route documents, resolved decorations and project discovery are cached by URI and contents. Saved Controller changes invalidate only dependent route documents through a reverse dependency index. Definition reads additionally validate cached Controller contents against filesystem modification time and size, so a delayed or missed watcher cannot return an obsolete method. Configuration and Composer mapping changes clear the broader project caches because they can alter every class mapping.
 
 ## Artisan boundary
 

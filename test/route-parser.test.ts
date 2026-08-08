@@ -131,6 +131,20 @@ Route::apiResources([
     ]);
   });
 
+  it('parses resource methods declared by only', () => {
+    const source = `<?php
+Route::resource('orders', OrderController::class)->only(['a', 'b']);
+Route::apiResource('photos', PhotoController::class)->only('index', 'show')->middleware('auth');`;
+    assert.deepEqual(parser.parse(source).targets.map(({ controller, method, kind }) => ({ controller, method, kind })), [
+      { controller: 'OrderController', method: undefined, kind: 'resource' },
+      { controller: 'OrderController', method: 'a', kind: 'resource' },
+      { controller: 'OrderController', method: 'b', kind: 'resource' },
+      { controller: 'PhotoController', method: undefined, kind: 'resource' },
+      { controller: 'PhotoController', method: 'index', kind: 'resource' },
+      { controller: 'PhotoController', method: 'show', kind: 'resource' },
+    ]);
+  });
+
   it('covers the complete fluent controller group from issue #3', () => {
     const source = `<?php
 Route::name('shared.')->prefix('/shared')->middleware('auth')->controller(SharedController::class)->group(function () {
