@@ -35,7 +35,7 @@ export function activate(context: ExtensionContext): void {
   const composerWatcher = workspace.createFileSystemWatcher('**/composer.json');
   const invalidateAndRefresh = (uri: Uri): void => {
     service.invalidate(uri);
-    provider.scheduleRefresh();
+    provider.refresh();
   };
   context.subscriptions.push(
     languages.registerDefinitionProvider(selector, provider),
@@ -44,11 +44,8 @@ export function activate(context: ExtensionContext): void {
     workspace.onDidChangeConfiguration((event) => {
       if (event.affectsConfiguration('laravel_jump_controller')) {
         service.clear();
-        provider.scheduleRefresh();
+        provider.refresh();
       }
-    }),
-    workspace.onDidChangeTextDocument((event) => {
-      if (event.document.languageId === 'php') invalidateAndRefresh(event.document.uri);
     }),
     phpWatcher.onDidCreate(invalidateAndRefresh),
     phpWatcher.onDidChange(invalidateAndRefresh),
@@ -58,7 +55,7 @@ export function activate(context: ExtensionContext): void {
     composerWatcher.onDidDelete(invalidateAndRefresh),
     commands.registerCommand('laravelJumpController.refreshIndex', () => {
       service.clear();
-      provider.scheduleRefresh();
+      provider.refresh();
       void window.showInformationMessage('Laravel controller index refreshed.');
     }),
     phpWatcher,
@@ -72,21 +69,15 @@ export function deactivate(): void {}
 
 class LaravelNavigationProvider implements DefinitionProvider, HoverProvider, DocumentLinkProvider, Disposable {
   private readonly linksChanged = new EventEmitter<void>();
-  private refreshTimer: NodeJS.Timeout | undefined;
   readonly onDidChangeDocumentLinks: Event<void> = this.linksChanged.event;
 
   constructor(private readonly service: LaravelNavigationService) {}
 
-  scheduleRefresh(): void {
-    if (this.refreshTimer) clearTimeout(this.refreshTimer);
-    this.refreshTimer = setTimeout(() => {
-      this.refreshTimer = undefined;
-      this.linksChanged.fire();
-    }, 150);
+  refresh(): void {
+    this.linksChanged.fire();
   }
 
   dispose(): void {
-    if (this.refreshTimer) clearTimeout(this.refreshTimer);
     this.linksChanged.dispose();
   }
 
@@ -252,8 +243,6 @@ class LaravelNavigationService implements Disposable {
 
   private readText(uri: Uri): Promise<string | undefined> {
     const key = uri.toString();
-    const openDocument = workspace.textDocuments.find((document) => document.uri.toString() === key);
-    if (openDocument) return Promise.resolve(openDocument.getText());
     let pending = this.fileContents.get(key);
     if (!pending) {
       pending = Promise.resolve(workspace.fs.readFile(uri))
