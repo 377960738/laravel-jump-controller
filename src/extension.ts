@@ -83,13 +83,15 @@ interface ResolvedLink {
   resolved: ResolvedTarget;
   label: 'controller' | 'controller method';
 }
-interface ParsedDocument { version: number; targets: RouteTarget[] }
+interface ParsedDocument { text: string; targets: RouteTarget[] }
+interface ResolvedDocument { text: string; links: Promise<ResolvedLink[]> }
 interface ProjectInfo { root: Uri; composer: ComposerJson }
 type SymbolKind = 'class' | 'method';
 
 class LaravelNavigationService implements Disposable {
   private readonly parser = new LaravelRouteParser();
   private readonly documents = new Map<string, ParsedDocument>();
+  private readonly resolvedDocuments = new Map<string, ResolvedDocument>();
   private readonly projects = new Map<string, Promise<ProjectInfo>>();
   private readonly fileContents = new Map<string, Promise<string | undefined>>();
 
@@ -102,21 +104,37 @@ class LaravelNavigationService implements Disposable {
   }
 
   async resolvedLinks(document: TextDocument, token: CancellationToken): Promise<ResolvedLink[]> {
+    const key = document.uri.toString();
+    const text = document.getText();
+    let cached = this.resolvedDocuments.get(key);
+    if (!cached || cached.text !== text) {
+      const links = this.computeResolvedLinks(document);
+      cached = { text, links };
+      this.resolvedDocuments.set(key, cached);
+      void links.catch(() => {
+        if (this.resolvedDocuments.get(key)?.links === links) this.resolvedDocuments.delete(key);
+      });
+    }
+    const links = await cached.links;
+    return token.isCancellationRequested ? [] : links;
+  }
+
+  private async computeResolvedLinks(document: TextDocument): Promise<ResolvedLink[]> {
     const pending = this.targets(document).flatMap((target) => {
       const methodOnly = target.methodRange && sameRange(target.controllerRange, target.methodRange);
       const requests: Array<Promise<ResolvedLink | undefined>> = [];
       if (!methodOnly) {
-        requests.push(this.resolveLink(document, target, 'class', target.controllerRange, 'controller', token));
+        requests.push(this.resolveLink(document, target, 'class', target.controllerRange, 'controller'));
       }
       if (target.methodRange) {
-        requests.push(this.resolveLink(document, target, 'method', target.methodRange, 'controller method', token));
+        requests.push(this.resolveLink(document, target, 'method', target.methodRange, 'controller method'));
       } else if (methodOnly) {
-        requests.push(this.resolveLink(document, target, 'class', target.controllerRange, 'controller', token));
+        requests.push(this.resolveLink(document, target, 'class', target.controllerRange, 'controller'));
       }
       return requests;
     });
     const links = await Promise.all(pending);
-    return token.isCancellationRequested ? [] : links.filter((link): link is ResolvedLink => link !== undefined);
+    return links.filter((link): link is ResolvedLink => link !== undefined);
   }
 
   private async resolveLink(
@@ -125,7 +143,7 @@ class LaravelNavigationService implements Disposable {
     symbol: SymbolKind,
     range: { start: number; end: number },
     label: ResolvedLink['label'],
-    token: CancellationToken,
+    token?: CancellationToken,
   ): Promise<ResolvedLink | undefined> {
     const resolved = await this.resolveTarget(document, target, symbol, token);
     return resolved ? { range, resolved, label } : undefined;
@@ -135,11 +153,11 @@ class LaravelNavigationService implements Disposable {
     document: TextDocument,
     target: RouteTarget,
     symbol: SymbolKind,
-    token: CancellationToken,
+    token?: CancellationToken,
   ): Promise<ResolvedTarget | undefined> {
 
     const project = await this.projectFor(document.uri);
-    if (!project || token.isCancellationRequested) return undefined;
+    if (!project || token?.isCancellationRequested) return undefined;
     const configuration = workspace.getConfiguration('laravel_jump_controller', document.uri);
     const controllerPath = configuration.get<string>('pathController', 'app/Http/Controllers');
     const controllerNamespace = configuration.get<string>('pathNamespace', 'App\\Http\\Controllers');
@@ -162,12 +180,20 @@ class LaravelNavigationService implements Disposable {
 
   invalidate(uri: Uri): void {
     this.documents.delete(uri.toString());
+    this.resolvedDocuments.delete(uri.toString());
     this.fileContents.delete(uri.toString());
-    if (uri.path.endsWith('/composer.json')) this.projects.clear();
+    if (uri.path.endsWith('/composer.json')) {
+      this.projects.clear();
+      this.resolvedDocuments.clear();
+    } else if (uri.path.endsWith('.php')) {
+      // A saved controller may change symbol locations used by any route file.
+      this.resolvedDocuments.clear();
+    }
   }
 
   clear(): void {
     this.documents.clear();
+    this.resolvedDocuments.clear();
     this.projects.clear();
     this.fileContents.clear();
   }
@@ -176,10 +202,11 @@ class LaravelNavigationService implements Disposable {
 
   private targets(document: TextDocument): RouteTarget[] {
     const key = document.uri.toString();
+    const text = document.getText();
     const cached = this.documents.get(key);
-    if (cached?.version === document.version) return cached.targets;
-    const targets = this.parser.parse(document.getText(), document.fileName).targets;
-    this.documents.set(key, { version: document.version, targets });
+    if (cached?.text === text) return cached.targets;
+    const targets = this.parser.parse(text, document.fileName).targets;
+    this.documents.set(key, { text, targets });
     return targets;
   }
 

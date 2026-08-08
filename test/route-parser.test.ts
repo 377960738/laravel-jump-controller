@@ -108,6 +108,17 @@ Route::name('api_sy_dictionary.')->resource(
     });
   });
 
+  it('parses a legacy string controller in a fluent resource route', () => {
+    const source = `<?php
+Route::name('api_collection')->resource('foundFlow/collection/index', 'V1_1\\Api\\FoundFlow\\Collection')->middleware('VerifyVip');`;
+    const [target] = parser.parse(source).targets;
+    assert.deepEqual(target, {
+      controller: 'V1_1\\Api\\FoundFlow\\Collection',
+      kind: 'resource',
+      controllerRange: offsets(source, 'V1_1\\Api\\FoundFlow\\Collection'),
+    });
+  });
+
   it('parses plural resource declarations', () => {
     const source = `<?php
 Route::apiResources([
