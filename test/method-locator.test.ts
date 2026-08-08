@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { locateClass, locateMethod } from '../src/core/method-locator';
+import { locateClass, locateMethod, parentClassName } from '../src/core/method-locator';
 
 describe('locateMethod', () => {
   it('finds formatted methods and __invoke using PHP AST', () => {
@@ -23,5 +23,26 @@ describe('locateMethod', () => {
     const methodOffset = locateMethod(source, 'show', 'UserController');
     assert.equal(source.slice(classOffset, classOffset! + 14), 'UserController');
     assert.ok(methodOffset! > source.indexOf('UserController'));
+  });
+});
+
+describe('parentClassName', () => {
+  it('resolves imported parent aliases', () => {
+    const source = `<?php
+namespace App\\Http\\Controllers;
+use App\\Http\\Controllers\\Base\\CrudController as BaseController;
+final class OrderController extends BaseController {}`;
+    assert.equal(parentClassName(source, 'OrderController'), 'App\\Http\\Controllers\\Base\\CrudController');
+  });
+
+  it('resolves namespace-relative and fully-qualified parents', () => {
+    assert.equal(
+      parentClassName('<?php namespace App\\Http; class Child extends BaseController {}', 'Child'),
+      'App\\Http\\BaseController',
+    );
+    assert.equal(
+      parentClassName('<?php namespace App\\Http; class Child extends \\Framework\\BaseController {}', 'Child'),
+      'Framework\\BaseController',
+    );
   });
 });

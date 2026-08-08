@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { commands, DocumentLink, extensions, Position, Uri, workspace } from 'vscode';
+import { commands, extensions, Position, Uri, workspace } from 'vscode';
 
 export async function run(): Promise<void> {
   const folder = workspace.workspaceFolders?.[0];
@@ -24,8 +24,30 @@ export async function run(): Promise<void> {
   );
   assert.equal(methodDefinitions[0]?.range.start.line, 8);
 
-  const documentLinks = await commands.executeCommand<DocumentLink[]>('vscode.executeDocumentLinkProvider', routeUri);
-  assert.ok(documentLinks.some((link) => document.getText(link.range) === 'Orders'));
-  assert.ok(documentLinks.some((link) => document.getText(link.range) === 'show'));
-  assert.ok(documentLinks.every((link) => link.target?.scheme === 'file'));
+  const inheritedOffset = source.indexOf("'inheritedIndex'") + 2;
+  const inheritedDefinitions = await commands.executeCommand<Array<{ uri: Uri; range: { start: Position } }>>(
+    'vscode.executeDefinitionProvider', routeUri, document.positionAt(inheritedOffset),
+  );
+  assert.equal(
+    inheritedDefinitions[0]?.uri.fsPath,
+    Uri.joinPath(folder.uri, 'app', 'Http', 'Controllers', 'Base', 'CrudController.php').fsPath,
+  );
+  assert.equal(inheritedDefinitions[0]?.range.start.line, 6);
+
+  const missingRouteUri = Uri.joinPath(folder.uri, 'routes', '.integration-missing-method.php');
+  const missingRoute = `<?php
+use App\\Http\\Controllers\\OrderController;
+Route::get('/missing', [OrderController::class, 'renamedMethod']);
+`;
+  await workspace.fs.writeFile(missingRouteUri, new TextEncoder().encode(missingRoute));
+  try {
+    const missingDocument = await workspace.openTextDocument(missingRouteUri);
+    const missingMethodOffset = missingRoute.indexOf('renamedMethod');
+    const missingDefinitions = await commands.executeCommand<Array<unknown>>(
+      'vscode.executeDefinitionProvider', missingRouteUri, missingDocument.positionAt(missingMethodOffset + 2),
+    );
+    assert.deepEqual(missingDefinitions, []);
+  } finally {
+    await workspace.fs.delete(missingRouteUri);
+  }
 }
