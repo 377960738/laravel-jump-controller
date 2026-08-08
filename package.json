@@ -8,6 +8,7 @@
     "name": "pgl"
   },
   "license": "MIT",
+  "packageManager": "npm@10.9.8",
   "repository": {
     "type": "git",
     "url": "https://github.com/377960738/laravel-jump-controller.git"

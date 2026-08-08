@@ -1,5 +1,10 @@
 # Change Log
 
+## Unreleased
+
+* Add a Chinese testing/debugging handbook and maintained VS Code launch/task configurations.
+* Retire the former 0.1.x release line and document the 0.0.x-to-0.2.x architecture comparison.
+
 ## 0.2.3 - August 08, 2026
 
 * Invalidate navigation synchronously after Controller saves and validate cached files by modification time and size before definitions, preventing stale jumps during filesystem-watcher races.

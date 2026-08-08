@@ -18,3 +18,4 @@ vsc-extension-quickstart.md
 !dist/extension.js
 AGENTS.md
 laravel-jump-controller.code-workspace
+.nvmrc

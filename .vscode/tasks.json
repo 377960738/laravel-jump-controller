@@ -2,6 +2,12 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "清理生成文件",
+      "type": "npm",
+      "script": "clean",
+      "problemMatcher": []
+    },
+    {
       "label": "构建插件",
       "type": "npm",
       "script": "compile",

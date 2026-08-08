@@ -51,7 +51,7 @@ npm ci --ignore-scripts
 npm run check
 ```
 
-Node 22 and 24 are covered by the current CI matrix. See [debugging and testing](docs/DEBUGGING.md), [design](docs/DESIGN.md), [compatibility](docs/COMPATIBILITY.md), [legacy comparison](docs/LEGACY-COMPARISON.md), and [roadmap](docs/ROADMAP.md).
+Node 22 and 24 are covered by the current CI matrix. See [debugging and testing](https://github.com/377960738/laravel-jump-controller/blob/master/docs/DEBUGGING.md), [design](https://github.com/377960738/laravel-jump-controller/blob/master/docs/DESIGN.md), [compatibility](https://github.com/377960738/laravel-jump-controller/blob/master/docs/COMPATIBILITY.md), [repository audit](https://github.com/377960738/laravel-jump-controller/blob/master/docs/REPOSITORY-AUDIT.md), [legacy comparison](https://github.com/377960738/laravel-jump-controller/blob/master/docs/LEGACY-COMPARISON.md), and [roadmap](https://github.com/377960738/laravel-jump-controller/blob/master/docs/ROADMAP.md).
 
 ## License
 

@@ -153,6 +153,7 @@ F5 使用一次性编译。修改代码后可以：
 通过命令面板运行 `Tasks: Run Task`，可选择：
 
 - `构建插件`：一次性生成 `dist/extension.js`；
+- `清理生成文件`：删除可重建的 `dist` 和 `out-test`；
 - `持续构建插件`：esbuild watch；
 - `类型检查`；
 - `单元与 Demo 回归测试`；
