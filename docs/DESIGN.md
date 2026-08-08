@@ -13,14 +13,14 @@ PHP TextDocument
   -> project discovery (nearest composer.json within workspace)
   -> Composer PSR-4 + compatible controller-path fallback
   -> controller PHP AST method locator
-  -> VS Code Definition + Hover
+  -> VS Code Definition + Hover + successful-target Document Links
 ```
 
 `src/core` is editor-independent and unit tested. `src/extension.ts` adapts offsets, URIs, configuration and cancellation to VS Code.
 
 ## Why DefinitionProvider
 
-Controller navigation is a language definition operation, so `DefinitionProvider` provides the native Ctrl/Cmd-click, F12 and Peek Definition behavior. The old `DocumentLinkProvider` treated PHP syntax as a generic URL and required eager whole-document link construction. Definition lookup is demand-driven and semantically correct. Hover reuses the same resolver and never performs a separate path guess.
+Controller navigation is a language definition operation, so `DefinitionProvider` provides the native Ctrl/Cmd-click, F12 and Peek Definition behavior. A `DocumentLinkProvider` is retained specifically for the familiar successful-match underline. Unlike the old implementation, it shares the AST, project discovery, controller content cache and exact symbol resolver with Definition and Hover; unresolved targets are not underlined.
 
 ## Parsing decision
 

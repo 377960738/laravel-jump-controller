@@ -12,9 +12,10 @@ interface PhpNode {
 
 const ROUTE_METHODS = new Set([
   'get', 'post', 'put', 'patch', 'delete', 'options', 'any', 'match',
-  'resource', 'apiResource', 'singleton', 'apiSingleton',
+  'resource', 'apiResource', 'singleton', 'apiSingleton', 'resources', 'apiResources',
 ]);
 const RESOURCE_METHODS = new Set(['resource', 'apiResource', 'singleton', 'apiSingleton']);
+const PLURAL_RESOURCE_METHODS = new Set(['resources', 'apiResources']);
 
 export class LaravelRouteParser {
   private readonly parser = new PhpParser({
@@ -55,10 +56,9 @@ function visit(
       return;
     }
 
-    const routeCall = getStaticRouteCall(node, aliases);
+    const routeCall = getRouteCall(node, aliases);
     if (routeCall && ROUTE_METHODS.has(routeCall.method)) {
-      const target = parseRouteTarget(node, routeCall.method, groupController, aliases);
-      if (target) targets.push(target);
+      targets.push(...parseRouteTargets(node, routeCall.method, groupController, aliases));
     }
   }
 
@@ -72,66 +72,78 @@ function visit(
   }
 }
 
-function parseRouteTarget(
+function parseRouteTargets(
   call: PhpNode,
   method: string,
   groupController: string | undefined,
   aliases: ReadonlyMap<string, string>,
-): RouteTarget | undefined {
+): RouteTarget[] {
   const args = nodeArray(call.arguments);
+  if (PLURAL_RESOURCE_METHODS.has(method)) {
+    const resources = args[0];
+    if (!resources || resources.kind !== 'array') return [];
+    return nodeArray(resources.items).flatMap((item) => {
+      const value = isNode(item.value) ? item.value : undefined;
+      const classTarget = value ? classConstantTarget(value, aliases) : undefined;
+      return classTarget
+        ? [{ controller: classTarget.name, kind: 'resource' as const, controllerRange: classTarget.range }]
+        : [];
+    });
+  }
+
   const actionIndex = method === 'match' ? 2 : 1;
   const action = args[actionIndex];
-  if (!action) return undefined;
+  if (!action) return [];
 
   if (RESOURCE_METHODS.has(method)) {
     const classTarget = classConstantTarget(action, aliases);
-    if (!classTarget) return undefined;
-    return { controller: classTarget.name, kind: 'resource', controllerRange: classTarget.range };
+    if (!classTarget) return [];
+    return [{ controller: classTarget.name, kind: 'resource', controllerRange: classTarget.range }];
   }
 
   if (action.kind === 'array') {
     const items = nodeArray(action.items).map((item) => isNode(item.value) ? item.value : item);
     const classTarget = items[0] ? classConstantTarget(items[0], aliases) : undefined;
     const actionMethod = items[1] ? stringTarget(items[1]) : undefined;
-    if (!classTarget || !actionMethod) return undefined;
-    return {
+    if (!classTarget || !actionMethod) return [];
+    return [{
       controller: classTarget.name,
       method: actionMethod.value,
       kind: 'action',
       controllerRange: classTarget.range,
       methodRange: actionMethod.range,
-    };
+    }];
   }
 
   const classTarget = classConstantTarget(action, aliases);
   if (classTarget) {
-    return {
+    return [{
       controller: classTarget.name,
       method: '__invoke',
       kind: 'invokable',
       controllerRange: classTarget.range,
-    };
+    }];
   }
 
   const string = stringTarget(action);
-  if (!string) return undefined;
+  if (!string) return [];
   if (groupController && !string.value.includes('@') && !string.value.includes('::')) {
-    return {
+    return [{
       controller: groupController,
       method: string.value,
       kind: 'action',
       controllerRange: string.range,
       methodRange: string.range,
-    };
+    }];
   }
 
   const separator = string.value.includes('@') ? '@' : string.value.includes('::') ? '::' : undefined;
-  if (!separator) return undefined;
+  if (!separator) return [];
   const splitAt = string.value.lastIndexOf(separator);
   const controller = resolveName(string.value.slice(0, splitAt), aliases);
   const actionMethod = string.value.slice(splitAt + separator.length);
   const valueStart = string.range.start;
-  return {
+  return [{
     controller,
     method: actionMethod,
     kind: 'action',
@@ -140,7 +152,7 @@ function parseRouteTarget(
       start: valueStart + splitAt + separator.length,
       end: string.range.end,
     },
-  };
+  }];
 }
 
 function parseControllerGroup(
@@ -168,6 +180,25 @@ function findControllerCall(value: unknown, aliases: ReadonlyMap<string, string>
   if (value.kind === 'call') return findControllerCall(value.what, aliases);
   if (value.kind === 'propertylookup') return findControllerCall(value.what, aliases);
   return undefined;
+}
+
+function getRouteCall(call: PhpNode, aliases: ReadonlyMap<string, string>): { method: string } | undefined {
+  const direct = getStaticRouteCall(call, aliases);
+  if (direct) return direct;
+  if (call.kind !== 'call' || !isNode(call.what) || call.what.kind !== 'propertylookup') return undefined;
+  const method = identifierName(call.what.offset);
+  return method && isRouteChain(call.what.what, aliases) ? { method } : undefined;
+}
+
+function isRouteChain(value: unknown, aliases: ReadonlyMap<string, string>): boolean {
+  if (!isNode(value)) return false;
+  if (value.kind === 'call') {
+    if (getStaticRouteCall(value, aliases)) return true;
+    return isNode(value.what) && value.what.kind === 'propertylookup'
+      ? isRouteChain(value.what.what, aliases)
+      : false;
+  }
+  return value.kind === 'propertylookup' ? isRouteChain(value.what, aliases) : false;
 }
 
 function getStaticRouteCall(call: PhpNode, aliases: ReadonlyMap<string, string>): { method: string } | undefined {

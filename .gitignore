@@ -2,6 +2,7 @@ out
 out-test
 node_modules
 dist
+build
 .vscode-test/
 *.vsix
 npm-debug.log

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { commands, extensions, Position, Uri, workspace } from 'vscode';
+import { commands, DocumentLink, extensions, Position, Uri, workspace } from 'vscode';
 
 export async function run(): Promise<void> {
   const folder = workspace.workspaceFolders?.[0];
@@ -22,5 +22,10 @@ export async function run(): Promise<void> {
   const methodDefinitions = await commands.executeCommand<Array<{ uri: Uri; range: { start: Position } }>>(
     'vscode.executeDefinitionProvider', routeUri, document.positionAt(methodOffset),
   );
-  assert.equal(methodDefinitions[0]?.range.start.line, 6);
+  assert.equal(methodDefinitions[0]?.range.start.line, 8);
+
+  const documentLinks = await commands.executeCommand<DocumentLink[]>('vscode.executeDocumentLinkProvider', routeUri);
+  assert.ok(documentLinks.some((link) => document.getText(link.range) === 'Orders'));
+  assert.ok(documentLinks.some((link) => document.getText(link.range) === 'show'));
+  assert.ok(documentLinks.every((link) => link.target?.scheme === 'file'));
 }

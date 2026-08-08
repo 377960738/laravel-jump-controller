@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 
 const extensionDevelopmentPath = resolve('.');
 const extensionTestsPath = resolve('out-test/suite.js');
-const fixturePath = resolve('test/fixtures/laravel');
+const fixturePath = resolve('demo/laravel-app');
 
 await esbuild.build({
   entryPoints: ['test/suite.ts'],

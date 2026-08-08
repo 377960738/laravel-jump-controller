@@ -2,7 +2,7 @@
 
 Native controller navigation for Laravel route files in VS Code.
 
-Place the cursor on a controller or action and use Ctrl/Cmd-click, F12, or **Go to Definition**. The extension resolves the controller file through Composer PSR-4 and opens the requested method. Hover shows the resolved target.
+Successfully resolved controller and action symbols are underlined. Use Ctrl/Cmd-click, F12, or **Go to Definition** to navigate. The extension resolves the controller file through Composer PSR-4 and opens the requested class or method. Hover shows the resolved target.
 
 ## Supported route forms
 
@@ -14,6 +14,8 @@ Route::post('/orders', OrderController::class); // __invoke
 Route::match(['get', 'head'], '/orders/{order}', [OrderController::class, 'show']);
 Route::apiResource('orders', OrderController::class);
 
+Route::name('api.')->resource('dictionary', DictionaryController::class);
+
 Route::controller(OrderController::class)->group(function () {
     Route::get('/orders/{order}', 'show');
 });
@@ -23,7 +25,7 @@ Multiline calls, imported aliases, legacy `Controller@method` / `Controller::met
 
 ## Configuration
 
-Composer PSR-4 is preferred automatically. Existing Laravel layouts can override the fallback:
+Composer PSR-4 is detected automatically and takes precedence. Existing or legacy Laravel layouts can configure the fallback:
 
 ```json
 {
@@ -33,6 +35,8 @@ Composer PSR-4 is preferred automatically. Existing Laravel layouts can override
 ```
 
 Settings are resource scoped and update without reloading VS Code. Nested Laravel projects use their nearest `composer.json`.
+
+For a broad set of runnable navigation examples, open [`demo/laravel-app`](demo/laravel-app).
 
 ## Safety
 

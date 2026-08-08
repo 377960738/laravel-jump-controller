@@ -58,12 +58,12 @@
         "laravel_jump_controller.pathController": {
           "type": "string",
           "default": "app/Http/Controllers",
-          "description": "Controller directory relative to the Laravel project root."
+          "description": "Fallback controller directory relative to the Laravel project root. Composer PSR-4 mappings take precedence."
         },
         "laravel_jump_controller.pathNamespace": {
           "type": "string",
           "default": "App\\Http\\Controllers",
-          "description": "Namespace corresponding to the configured controller directory."
+          "description": "Fallback namespace corresponding to pathController. Composer PSR-4 mappings take precedence."
         }
       }
     },

@@ -1,0 +1,13 @@
+{
+  "autoload": {
+    "psr-4": {
+      "App\\": "app/",
+      "V1_1\\": "modules/V1_1/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": ["tests/", "spec/"]
+    }
+  }
+}

@@ -4,6 +4,8 @@ import {
   Definition,
   DefinitionProvider,
   Disposable,
+  DocumentLink,
+  DocumentLinkProvider,
   ExtensionContext,
   Hover,
   HoverProvider,
@@ -30,6 +32,7 @@ export function activate(context: ExtensionContext): void {
   context.subscriptions.push(
     languages.registerDefinitionProvider(selector, provider),
     languages.registerHoverProvider(selector, provider),
+    languages.registerDocumentLinkProvider(selector, provider),
     workspace.onDidChangeConfiguration((event) => {
       if (event.affectsConfiguration('laravel_jump_controller')) service.clear();
     }),
@@ -44,7 +47,7 @@ export function activate(context: ExtensionContext): void {
 
 export function deactivate(): void {}
 
-class LaravelNavigationProvider implements DefinitionProvider, HoverProvider {
+class LaravelNavigationProvider implements DefinitionProvider, HoverProvider, DocumentLinkProvider {
   constructor(private readonly service: LaravelNavigationService) {}
 
   async provideDefinition(document: TextDocument, position: Position, token: CancellationToken): Promise<Definition | undefined> {
@@ -61,21 +64,79 @@ class LaravelNavigationProvider implements DefinitionProvider, HoverProvider {
     if (resolved.target.method) markdown.appendMarkdown(` → \`${resolved.target.method}()\``);
     return new Hover(markdown, offsetRange(document, resolved.target.controllerRange));
   }
+
+  async provideDocumentLinks(document: TextDocument, token: CancellationToken): Promise<DocumentLink[]> {
+    const links = await this.service.resolvedLinks(document, token);
+    return links.map(({ range, resolved, label }) => {
+      const line = resolved.position.line + 1;
+      const column = resolved.position.character + 1;
+      const link = new DocumentLink(offsetRange(document, range), resolved.uri.with({ fragment: `L${line},${column}` }));
+      link.tooltip = `Open Laravel ${label}`;
+      return link;
+    });
+  }
 }
 
 interface ResolvedTarget { uri: Uri; position: Position; target: RouteTarget }
+interface ResolvedLink {
+  range: { start: number; end: number };
+  resolved: ResolvedTarget;
+  label: 'controller' | 'controller method';
+}
 interface ParsedDocument { version: number; targets: RouteTarget[] }
 interface ProjectInfo { root: Uri; composer: ComposerJson }
+type SymbolKind = 'class' | 'method';
 
 class LaravelNavigationService implements Disposable {
   private readonly parser = new LaravelRouteParser();
   private readonly documents = new Map<string, ParsedDocument>();
   private readonly projects = new Map<string, Promise<ProjectInfo>>();
+  private readonly fileContents = new Map<string, Promise<string | undefined>>();
 
   async resolveAt(document: TextDocument, position: Position, token: CancellationToken): Promise<ResolvedTarget | undefined> {
     const offset = document.offsetAt(position);
     const target = this.targets(document).find((candidate) => contains(candidate.controllerRange, offset) || (candidate.methodRange && contains(candidate.methodRange, offset)));
     if (!target || token.isCancellationRequested) return undefined;
+    const symbol: SymbolKind = target.methodRange && contains(target.methodRange, offset) ? 'method' : 'class';
+    return this.resolveTarget(document, target, symbol, token);
+  }
+
+  async resolvedLinks(document: TextDocument, token: CancellationToken): Promise<ResolvedLink[]> {
+    const pending = this.targets(document).flatMap((target) => {
+      const methodOnly = target.methodRange && sameRange(target.controllerRange, target.methodRange);
+      const requests: Array<Promise<ResolvedLink | undefined>> = [];
+      if (!methodOnly) {
+        requests.push(this.resolveLink(document, target, 'class', target.controllerRange, 'controller', token));
+      }
+      if (target.methodRange) {
+        requests.push(this.resolveLink(document, target, 'method', target.methodRange, 'controller method', token));
+      } else if (methodOnly) {
+        requests.push(this.resolveLink(document, target, 'class', target.controllerRange, 'controller', token));
+      }
+      return requests;
+    });
+    const links = await Promise.all(pending);
+    return token.isCancellationRequested ? [] : links.filter((link): link is ResolvedLink => link !== undefined);
+  }
+
+  private async resolveLink(
+    document: TextDocument,
+    target: RouteTarget,
+    symbol: SymbolKind,
+    range: { start: number; end: number },
+    label: ResolvedLink['label'],
+    token: CancellationToken,
+  ): Promise<ResolvedLink | undefined> {
+    const resolved = await this.resolveTarget(document, target, symbol, token);
+    return resolved ? { range, resolved, label } : undefined;
+  }
+
+  private async resolveTarget(
+    document: TextDocument,
+    target: RouteTarget,
+    symbol: SymbolKind,
+    token: CancellationToken,
+  ): Promise<ResolvedTarget | undefined> {
 
     const project = await this.projectFor(document.uri);
     if (!project || token.isCancellationRequested) return undefined;
@@ -86,13 +147,14 @@ class LaravelNavigationService implements Disposable {
     for (const candidate of classPathCandidates(target.controller, project.composer, controllerNamespace, controllerPath)) {
       const uri = Uri.joinPath(project.root, ...candidate.relativePath.split('/'));
       if (!(await exists(uri))) continue;
-      const contents = new TextDecoder().decode(await workspace.fs.readFile(uri));
+      const contents = await this.readText(uri);
+      if (contents === undefined) continue;
       const className = target.controller.split('\\').at(-1);
-      const onMethod = target.methodRange ? contains(target.methodRange, offset) : false;
-      const targetOffset = onMethod && target.method
+      const targetOffset = symbol === 'method' && target.method
         ? locateMethod(contents, target.method, className)
         : locateClass(contents, className);
-      const position = targetOffset === undefined ? new Position(0, 0) : positionAt(contents, targetOffset);
+      const fallbackOffset = locateClass(contents, className);
+      const position = positionAt(contents, targetOffset ?? fallbackOffset ?? 0);
       return { uri, position, target };
     }
     return undefined;
@@ -100,12 +162,14 @@ class LaravelNavigationService implements Disposable {
 
   invalidate(uri: Uri): void {
     this.documents.delete(uri.toString());
+    this.fileContents.delete(uri.toString());
     if (uri.path.endsWith('/composer.json')) this.projects.clear();
   }
 
   clear(): void {
     this.documents.clear();
     this.projects.clear();
+    this.fileContents.clear();
   }
 
   dispose(): void { this.clear(); }
@@ -117,6 +181,17 @@ class LaravelNavigationService implements Disposable {
     const targets = this.parser.parse(document.getText(), document.fileName).targets;
     this.documents.set(key, { version: document.version, targets });
     return targets;
+  }
+
+  private readText(uri: Uri): Promise<string | undefined> {
+    const key = uri.toString();
+    let pending = this.fileContents.get(key);
+    if (!pending) {
+      pending = Promise.resolve(workspace.fs.readFile(uri))
+        .then((contents) => new TextDecoder().decode(contents), () => undefined);
+      this.fileContents.set(key, pending);
+    }
+    return pending;
   }
 
   private async projectFor(document: Uri): Promise<ProjectInfo | undefined> {
@@ -163,6 +238,10 @@ async function exists(uri: Uri): Promise<boolean> {
 
 function contains(range: { start: number; end: number }, offset: number): boolean {
   return offset >= range.start && offset < range.end;
+}
+
+function sameRange(left: { start: number; end: number }, right: { start: number; end: number }): boolean {
+  return left.start === right.start && left.end === right.end;
 }
 
 function offsetRange(document: TextDocument, range: { start: number; end: number }): Range {

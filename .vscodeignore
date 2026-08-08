@@ -8,6 +8,8 @@ dist/**/*.map
 test/**
 scripts/**
 docs/**
+demo/**
+build/**
 src/**
 .gitignore
 tsconfig.json
