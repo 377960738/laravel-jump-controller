@@ -6,6 +6,8 @@ import {
   Disposable,
   DocumentLink,
   DocumentLinkProvider,
+  Event,
+  EventEmitter,
   ExtensionContext,
   Hover,
   HoverProvider,
@@ -29,26 +31,64 @@ const selector = { scheme: 'file', language: 'php' };
 export function activate(context: ExtensionContext): void {
   const service = new LaravelNavigationService();
   const provider = new LaravelNavigationProvider(service);
+  const phpWatcher = workspace.createFileSystemWatcher('**/*.php');
+  const composerWatcher = workspace.createFileSystemWatcher('**/composer.json');
+  const invalidateAndRefresh = (uri: Uri): void => {
+    service.invalidate(uri);
+    provider.scheduleRefresh();
+  };
   context.subscriptions.push(
     languages.registerDefinitionProvider(selector, provider),
     languages.registerHoverProvider(selector, provider),
     languages.registerDocumentLinkProvider(selector, provider),
     workspace.onDidChangeConfiguration((event) => {
-      if (event.affectsConfiguration('laravel_jump_controller')) service.clear();
+      if (event.affectsConfiguration('laravel_jump_controller')) {
+        service.clear();
+        provider.scheduleRefresh();
+      }
     }),
-    workspace.onDidSaveTextDocument((document) => service.invalidate(document.uri)),
+    workspace.onDidChangeTextDocument((event) => {
+      if (event.document.languageId === 'php') invalidateAndRefresh(event.document.uri);
+    }),
+    phpWatcher.onDidCreate(invalidateAndRefresh),
+    phpWatcher.onDidChange(invalidateAndRefresh),
+    phpWatcher.onDidDelete(invalidateAndRefresh),
+    composerWatcher.onDidCreate(invalidateAndRefresh),
+    composerWatcher.onDidChange(invalidateAndRefresh),
+    composerWatcher.onDidDelete(invalidateAndRefresh),
     commands.registerCommand('laravelJumpController.refreshIndex', () => {
       service.clear();
+      provider.scheduleRefresh();
       void window.showInformationMessage('Laravel controller index refreshed.');
     }),
+    phpWatcher,
+    composerWatcher,
+    provider,
     service,
   );
 }
 
 export function deactivate(): void {}
 
-class LaravelNavigationProvider implements DefinitionProvider, HoverProvider, DocumentLinkProvider {
+class LaravelNavigationProvider implements DefinitionProvider, HoverProvider, DocumentLinkProvider, Disposable {
+  private readonly linksChanged = new EventEmitter<void>();
+  private refreshTimer: NodeJS.Timeout | undefined;
+  readonly onDidChangeDocumentLinks: Event<void> = this.linksChanged.event;
+
   constructor(private readonly service: LaravelNavigationService) {}
+
+  scheduleRefresh(): void {
+    if (this.refreshTimer) clearTimeout(this.refreshTimer);
+    this.refreshTimer = setTimeout(() => {
+      this.refreshTimer = undefined;
+      this.linksChanged.fire();
+    }, 150);
+  }
+
+  dispose(): void {
+    if (this.refreshTimer) clearTimeout(this.refreshTimer);
+    this.linksChanged.dispose();
+  }
 
   async provideDefinition(document: TextDocument, position: Position, token: CancellationToken): Promise<Definition | undefined> {
     const resolved = await this.service.resolveAt(document, position, token);
@@ -212,6 +252,8 @@ class LaravelNavigationService implements Disposable {
 
   private readText(uri: Uri): Promise<string | undefined> {
     const key = uri.toString();
+    const openDocument = workspace.textDocuments.find((document) => document.uri.toString() === key);
+    if (openDocument) return Promise.resolve(openDocument.getText());
     let pending = this.fileContents.get(key);
     if (!pending) {
       pending = Promise.resolve(workspace.fs.readFile(uri))
