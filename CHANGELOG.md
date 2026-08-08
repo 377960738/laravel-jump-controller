@@ -5,6 +5,7 @@
 * Resolve legacy quoted controller class names in resource declarations, including fluent routes such as `Route::name(...)->resource(..., 'V1_1\\Api\\FoundFlow\\Collection')`.
 * Cache fully resolved document links by URI and route contents so switching away from and back to an unchanged route file does not repeat controller discovery and symbol analysis.
 * Refresh visible route links after saved controller and filesystem changes. Unsaved controller edits deliberately do not affect route links.
+* Remove stale method underlines and definitions when the referenced controller method no longer exists; class navigation remains available.
 
 ## 0.2.0 - August 08, 2026 — Node.js 22 build release
 

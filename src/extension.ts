@@ -199,11 +199,13 @@ class LaravelNavigationService implements Disposable {
       const contents = await this.readText(uri);
       if (contents === undefined) continue;
       const className = target.controller.split('\\').at(-1);
-      const targetOffset = symbol === 'method' && target.method
-        ? locateMethod(contents, target.method, className)
-        : locateClass(contents, className);
-      const fallbackOffset = locateClass(contents, className);
-      const position = positionAt(contents, targetOffset ?? fallbackOffset ?? 0);
+      const classOffset = locateClass(contents, className);
+      if (classOffset === undefined) continue;
+      const targetOffset = symbol === 'method'
+        ? target.method ? locateMethod(contents, target.method, className) : undefined
+        : classOffset;
+      if (targetOffset === undefined) continue;
+      const position = positionAt(contents, targetOffset);
       return { uri, position, target };
     }
     return undefined;
