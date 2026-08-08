@@ -24,6 +24,16 @@ export async function run(): Promise<void> {
   );
   assert.equal(methodDefinitions[0]?.range.start.line, 8);
 
+  const inheritedOffset = source.indexOf("'inheritedIndex'") + 2;
+  const inheritedDefinitions = await commands.executeCommand<Array<{ uri: Uri; range: { start: Position } }>>(
+    'vscode.executeDefinitionProvider', routeUri, document.positionAt(inheritedOffset),
+  );
+  assert.equal(
+    inheritedDefinitions[0]?.uri.fsPath,
+    Uri.joinPath(folder.uri, 'app', 'Http', 'Controllers', 'Base', 'CrudController.php').fsPath,
+  );
+  assert.equal(inheritedDefinitions[0]?.range.start.line, 6);
+
   const missingRouteUri = Uri.joinPath(folder.uri, 'routes', '.integration-missing-method.php');
   const missingRoute = `<?php
 use App\\Http\\Controllers\\OrderController;

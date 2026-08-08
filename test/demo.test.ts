@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 import { existsSync, readFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { classPathCandidates, parseComposerJson } from '../src/core/composer';
-import { locateClass, locateMethod } from '../src/core/method-locator';
+import { locateClass, locateMethod, parentClassName } from '../src/core/method-locator';
 import { LaravelRouteParser } from '../src/core/route-parser';
 
 const root = join(process.cwd(), 'demo', 'laravel-app');
@@ -31,13 +31,26 @@ describe('demo Laravel project', () => {
         const className = basename(controllerPath, '.php');
         assert.notEqual(locateClass(controller, className), undefined);
         if (target.method) {
-          assert.notEqual(
-            locateMethod(controller, target.method, className),
-            undefined,
-            `${target.controller}::${target.method} should exist`,
-          );
+          assert.ok(methodExists(target.controller, target.method), `${target.controller}::${target.method} should exist`);
         }
       }
     });
   }
 });
+
+function methodExists(controllerClass: string, method: string, visited = new Set<string>()): boolean {
+  if (visited.has(controllerClass.toLowerCase())) return false;
+  visited.add(controllerClass.toLowerCase());
+  const candidate = classPathCandidates(
+    controllerClass,
+    composer,
+    'App\\Http\\Controllers',
+    'app/Http/Controllers',
+  ).map((item) => join(root, item.relativePath)).find(existsSync);
+  if (!candidate) return false;
+  const source = readFileSync(candidate, 'utf8');
+  const className = basename(candidate, '.php');
+  if (locateMethod(source, method, className) !== undefined) return true;
+  const parent = parentClassName(source, className);
+  return parent ? methodExists(parent, method, visited) : false;
+}

@@ -1,10 +1,12 @@
 <?php
 
 use App\Http\Controllers\InvokableReportController;
+use App\Http\Controllers\InheritedOrderController;
 use App\Http\Controllers\OrderController as Orders;
 use App\Http\Controllers\{PhotoController, PostController};
 
 Route::get('/orders', [Orders::class, 'index']);
+Route::get('/inherited-orders', [InheritedOrderController::class, 'inheritedIndex']);
 
 Route::get(
     '/orders/{order}',

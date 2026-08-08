@@ -23,7 +23,7 @@ import {
 import { LaravelRouteParser } from './core/route-parser';
 import type { RouteTarget } from './core/types';
 import { classPathCandidates, parseComposerJson, type ComposerJson } from './core/composer';
-import { locateClass, locateMethod } from './core/method-locator';
+import { locateClass, locateMethod, parentClassName } from './core/method-locator';
 
 const selector = { scheme: 'file', language: 'php' };
 
@@ -226,22 +226,30 @@ class LaravelNavigationService implements Disposable {
     const configuration = workspace.getConfiguration('laravel_jump_controller', document.uri);
     const controllerPath = configuration.get<string>('pathController', 'app/Http/Controllers');
     const controllerNamespace = configuration.get<string>('pathNamespace', 'App\\Http\\Controllers');
-
-    for (const candidate of classPathCandidates(target.controller, project.composer, controllerNamespace, controllerPath)) {
+    let currentClass: string | undefined = target.controller;
+    const visited = new Set<string>();
+    while (currentClass && !visited.has(currentClass.toLowerCase())) {
+      visited.add(currentClass.toLowerCase());
+      let parent: string | undefined;
+      let foundClass = false;
+      for (const candidate of classPathCandidates(currentClass, project.composer, controllerNamespace, controllerPath)) {
       const uri = Uri.joinPath(project.root, ...candidate.relativePath.split('/'));
       this.trackDependency(document.uri.toString(), uri.toString());
       if (!(await exists(uri))) continue;
       const contents = await this.readText(uri);
       if (contents === undefined) continue;
-      const className = target.controller.split('\\').at(-1);
+      const className = currentClass.split('\\').at(-1);
       const classOffset = locateClass(contents, className);
       if (classOffset === undefined) continue;
-      const targetOffset = symbol === 'method'
-        ? target.method ? locateMethod(contents, target.method, className) : undefined
-        : classOffset;
-      if (targetOffset === undefined) continue;
-      const position = positionAt(contents, targetOffset);
-      return { uri, position, target };
+      foundClass = true;
+      if (symbol === 'class') return { uri, position: positionAt(contents, classOffset), target };
+      const methodOffset = target.method ? locateMethod(contents, target.method, className) : undefined;
+      if (methodOffset !== undefined) return { uri, position: positionAt(contents, methodOffset), target };
+      parent = parentClassName(contents, className ?? '');
+      break;
+      }
+      if (!foundClass || !parent) return undefined;
+      currentClass = parent;
     }
     return undefined;
   }
