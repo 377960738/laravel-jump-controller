@@ -2,7 +2,7 @@
   "name": "laravel-jump-controller",
   "displayName": "Laravel Jump Controller",
   "description": "Navigate from Laravel routes to controller classes and methods.",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "publisher": "pgl",
   "author": {
     "name": "pgl"
