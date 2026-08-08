@@ -1,20 +1,85 @@
-// See https://go.microsoft.com/fwlink/?LinkId=733558
-// for the documentation about the tasks.json format
 {
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "type": "npm",
-            "script": "watch",
-            "problemMatcher": "$tsc-watch",
-            "isBackground": true,
-            "presentation": {
-                "reveal": "never"
-            },
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            }
-        }
-    ]
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "构建插件",
+      "type": "npm",
+      "script": "compile",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "持续构建插件",
+      "type": "npm",
+      "script": "watch",
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "类型检查",
+      "type": "npm",
+      "script": "typecheck",
+      "problemMatcher": "$tsc"
+    },
+    {
+      "label": "单元与 Demo 回归测试",
+      "type": "npm",
+      "script": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "提交前完整检查",
+      "type": "npm",
+      "script": "check",
+      "problemMatcher": "$tsc",
+      "group": "test"
+    },
+    {
+      "label": "Extension Host 集成测试",
+      "type": "npm",
+      "script": "test:extension",
+      "problemMatcher": [],
+      "group": "test"
+    },
+    {
+      "label": "Linux：Extension Host 集成测试（Xvfb）",
+      "type": "shell",
+      "command": "xvfb-run",
+      "args": [
+        "-a",
+        "npm",
+        "run",
+        "test:extension"
+      ],
+      "problemMatcher": [],
+      "group": "test",
+      "windows": {
+        "command": "npm",
+        "args": ["run", "test:extension"]
+      },
+      "osx": {
+        "command": "npm",
+        "args": ["run", "test:extension"]
+      }
+    },
+    {
+      "label": "检查 VSIX 内容",
+      "type": "npm",
+      "script": "package:check",
+      "problemMatcher": []
+    },
+    {
+      "label": "生成 VSIX",
+      "type": "npm",
+      "script": "package",
+      "problemMatcher": []
+    }
+  ]
 }

@@ -51,7 +51,7 @@ npm ci --ignore-scripts
 npm run check
 ```
 
-Node 22 and 24 are covered by the current CI matrix. See [design](docs/DESIGN.md), [compatibility](docs/COMPATIBILITY.md), [legacy comparison](docs/LEGACY-COMPARISON.md), and [roadmap](docs/ROADMAP.md).
+Node 22 and 24 are covered by the current CI matrix. See [debugging and testing](docs/DEBUGGING.md), [design](docs/DESIGN.md), [compatibility](docs/COMPATIBILITY.md), [legacy comparison](docs/LEGACY-COMPARISON.md), and [roadmap](docs/ROADMAP.md).
 
 ## License
 
