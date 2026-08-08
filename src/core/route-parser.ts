@@ -201,19 +201,31 @@ function stringTarget(node: PhpNode): { value: string; range: OffsetRange } | un
 
 function collectAliases(program: PhpNode): Map<string, string> {
   const aliases = new Map<string, string>();
-  const children = nodeArray(program.children);
-  for (const child of children) {
-    if (child.kind !== 'usegroup') continue;
-    const prefix = typeof child.name === 'string' ? `${child.name}\\` : '';
-    for (const item of nodeArray(child.items)) {
-      if (typeof item.name !== 'string') continue;
-      const fullName = `${prefix}${item.name}`;
-      const alias = isNode(item.alias) ? identifierName(item.alias) : undefined;
-      const fallback = fullName.split('\\').pop();
-      if (alias ?? fallback) aliases.set((alias ?? fallback)!, fullName);
+  collect(program);
+  return aliases;
+
+  function collect(node: PhpNode): void {
+    if (node.kind === 'usegroup' && (node.type === null || node.type === undefined || node.type === 'class')) {
+      const prefix = typeof node.name === 'string' ? `${node.name}\\` : '';
+      for (const item of nodeArray(node.items)) {
+        if (item.type !== null && item.type !== undefined && item.type !== 'class') continue;
+        if (typeof item.name !== 'string') continue;
+        const fullName = `${prefix}${item.name}`;
+        const alias = isNode(item.alias) ? identifierName(item.alias) : undefined;
+        const fallback = fullName.split('\\').pop();
+        if (alias ?? fallback) aliases.set((alias ?? fallback)!, fullName);
+      }
+      return;
+    }
+    for (const [key, value] of Object.entries(node)) {
+      if (key === 'loc' || key === 'comments' || key === 'errors') continue;
+      if (Array.isArray(value)) {
+        for (const child of value) if (isNode(child)) collect(child);
+      } else if (isNode(value)) {
+        collect(value);
+      }
     }
   }
-  return aliases;
 }
 
 function resolveName(name: string, aliases: ReadonlyMap<string, string>): string {

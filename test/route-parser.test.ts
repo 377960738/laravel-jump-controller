@@ -81,6 +81,18 @@ use Illuminate\\Support\\Facades\\Route as Router;
 Router::get('/users', [UserController::class, 'index']);`;
     assert.equal(parser.parse(source).targets[0]?.controller, 'UserController');
   });
+
+  it('handles grouped imports inside a namespace', () => {
+    const source = `<?php
+namespace App\\Routes;
+use App\\Http\\Controllers\\{UserController, AdminController as Admin};
+Route::get('/users', [UserController::class, 'index']);
+Route::get('/admin', [Admin::class, 'index']);`;
+    assert.deepEqual(parser.parse(source).targets.map((target) => target.controller), [
+      'App\\Http\\Controllers\\UserController',
+      'App\\Http\\Controllers\\AdminController',
+    ]);
+  });
 });
 
 function offsets(source: string, text: string) {
