@@ -1,6 +1,6 @@
 # Change Log
 
-## Unreleased
+## 0.2.1 - August 08, 2026
 
 * Resolve legacy quoted controller class names in resource declarations, including fluent routes such as `Route::name(...)->resource(..., 'V1_1\\Api\\FoundFlow\\Collection')`.
 * Cache fully resolved document links by URI and route contents so switching away from and back to an unchanged route file does not repeat controller discovery and symbol analysis.

@@ -2,24 +2,43 @@
   "name": "laravel-jump-controller",
   "displayName": "Laravel Jump Controller",
   "description": "Navigate from Laravel routes to controller classes and methods.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "pgl",
-  "author": { "name": "pgl" },
+  "author": {
+    "name": "pgl"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/377960738/laravel-jump-controller.git"
   },
-  "bugs": { "url": "https://github.com/377960738/laravel-jump-controller/issues" },
+  "bugs": {
+    "url": "https://github.com/377960738/laravel-jump-controller/issues"
+  },
   "homepage": "https://github.com/377960738/laravel-jump-controller#readme",
   "engines": {
     "vscode": "^1.85.0",
     "node": ">=22.0.0"
   },
-  "categories": ["Programming Languages", "Other"],
-  "keywords": ["laravel", "php", "route", "goto", "jump", "controller"],
-  "galleryBanner": { "color": "#FF544A", "theme": "light" },
-  "activationEvents": ["onLanguage:php"],
+  "categories": [
+    "Programming Languages",
+    "Other"
+  ],
+  "keywords": [
+    "laravel",
+    "php",
+    "route",
+    "goto",
+    "jump",
+    "controller"
+  ],
+  "galleryBanner": {
+    "color": "#FF544A",
+    "theme": "light"
+  },
+  "activationEvents": [
+    "onLanguage:php"
+  ],
   "icon": "images/icon.png",
   "main": "./dist/extension.js",
   "scripts": {
