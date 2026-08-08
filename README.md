@@ -1,22 +1,54 @@
-# Laravel-jump-controller
+# Laravel Jump Controller
 
->Fork from [stef-k/laravel-goto-controller](https://github.com/stef-k/laravel-goto-controller/blob/master/README.md)
+Native controller navigation for Laravel route files in VS Code.
 
-✨ Now, It'sEnhanced recognition ability,The effect is as follows
+Place the cursor on a controller or action and use Ctrl/Cmd-click, F12, or **Go to Definition**. The extension resolves the controller file through Composer PSR-4 and opens the requested method. Hover shows the resolved target.
 
-![image](images/183229170-7aedfdf0-4e7f-4421-a9d4-f094ab33c0d8.png)
+## Supported route forms
 
-## Alt + click to navigate from a route to a respective controller file
+```php
+use App\Http\Controllers\OrderController;
 
-![laravel-goto-controller](images/laravel-goto-controller.gif)
+Route::get('/orders', [OrderController::class, 'index']);
+Route::post('/orders', OrderController::class); // __invoke
+Route::match(['get', 'head'], '/orders/{order}', [OrderController::class, 'show']);
+Route::apiResource('orders', OrderController::class);
 
-## Alternative path for controllers
+Route::controller(OrderController::class)->group(function () {
+    Route::get('/orders/{order}', 'show');
+});
+```
 
-The extension supports non default directory paths, search in settings for `laravel jump controller` and set the desired path
-of your application's controllers:
+Multiline calls, imported aliases, legacy `Controller@method` / `Controller::method` strings, nested controller groups, resource and singleton variants are supported. Dynamic expressions, closures and user-defined route macros are not guessed.
 
-![laravel-goto-configuration](images/settings-alternative-controllers-path.jpg)
+## Configuration
 
-Marketplace link: [https://marketplace.visualstudio.com/items?itemName=pgl.laravel-jump-controller](https://marketplace.visualstudio.com/items?itemName=pgl.laravel-jump-controller)
+Composer PSR-4 is preferred automatically. Existing Laravel layouts can override the fallback:
 
-## For latest updates see the CHANGELOG
+```json
+{
+  "laravel_jump_controller.pathController": "app/Http/Controllers",
+  "laravel_jump_controller.pathNamespace": "App\\Http\\Controllers"
+}
+```
+
+Settings are resource scoped and update without reloading VS Code. Nested Laravel projects use their nearest `composer.json`.
+
+## Safety
+
+The extension performs static PHP analysis and does not boot Laravel or execute `artisan`. An Artisan-backed dynamic-route index remains a future, explicitly initiated enhancement.
+
+## Development
+
+Requirements: Node.js 18.18.2 or newer and npm.
+
+```bash
+npm ci --ignore-scripts
+npm run check
+```
+
+Node 18.18.2, 20 and 22 are covered by the CI matrix. See [design](docs/DESIGN.md), [compatibility](docs/COMPATIBILITY.md), and [roadmap](docs/ROADMAP.md).
+
+## License
+
+MIT

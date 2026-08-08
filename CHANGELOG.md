@@ -1,5 +1,15 @@
 # Change Log
 
+## 0.1.0 - Unreleased
+
+* Replace the single-line route regular expression with structural PHP AST parsing.
+* Use native Definition and Hover providers with exact source ranges.
+* Support multiline actions, imports and aliases, invokable controllers, nested controller groups, resource/singleton variants, and legacy callable strings.
+* Correct Composer `autoload-dev` handling and support PSR-4 path arrays and nested projects.
+* Replace synchronous Node filesystem scans with URI-based VS Code workspace I/O and caches.
+* Modernize the npm-only Node 18.18.2+ / TypeScript / esbuild / VS Code toolchain.
+* Add strict type checking, route/parser/resolver tests, package validation, and Node 18/20/22 CI.
+
 ## 0.0.34 - May, 12 2025
 
 * Add some additional rules `apiResource` `singleton` `apiSingleton`

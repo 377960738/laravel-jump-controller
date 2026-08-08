@@ -1,16 +1,17 @@
 {
-    "compilerOptions": {
-        "module": "commonjs",
-        "target": "es6",
-        "outDir": "out",
-        "lib": [
-            "es6"
-        ],
-        "sourceMap": true,
-        "rootDir": "src"
-    },
-    "exclude": [
-        "node_modules",
-        ".vscode-test"
-    ]
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "lib": ["ES2022"],
+    "rootDir": ".",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "types": ["node", "vscode"]
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts"]
 }

@@ -1,79 +1,78 @@
 {
-    "name": "laravel-jump-controller",
-    "displayName": "laravel-jump-controller",
-    "description": "Alt + click to navigate from a route to a respective controller file",
-    "version": "0.0.34",
-    "publisher": "pgl",
-    "author": {
-        "name": "pgl"
-    },
-    "engines": {
-        "vscode": "^1.18.0"
-    },
-    "categories": [
-        "Other"
-    ],
-    "keywords": [
-        "laravel",
-        "php",
-        "route",
-        "goto",
-        "jump",
-        "controller",
-        "laravel-jump-controller"
-    ],
-    "galleryBanner": {
-        "color": "#FF544A",
-        "theme": "light"
-    },
-    "activationEvents": [
-        "onLanguage:php"
-    ],
-    "icon": "images/icon.png",
-    "main": "./out/extension",
-    "scripts": {
-        "vscode:prepublish": "npm run compile",
-        "compile": "tsc -p ./",
-        "watch": "tsc -watch -p ./",
-        "postinstall": "node ./node_modules/vscode/bin/install",
-        "test": "npm run compile && node ./node_modules/vscode/bin/test"
-    },
-    "devDependencies": {
-        "@types/mocha": "",
-        "@types/node": "",
-        "typescript": "",
-        "vscode": "^1.1.33"
-    },
-    "dependencies": {
-        "n-readlines": "^1.0.0",
-        "vsce": "^2.10.0"
-    },
-    "license": "MIT",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/377960738/laravel-jump-controller.git"
-    },
-    "bugs": {
-        "url": "https://github.com/377960738/laravel-jump-controller/issues"
-    },
-    "homepage": "https://github.com/377960738/laravel-jump-controller/blob/master/README.md",
-    "contributes": {
-        "configuration": {
-            "type": "object",
-            "title": "Laravel jump controller configuration",
-            "properties": {
-                "laravel_jump_controller.pathController": {
-                    "type": "string",
-                    "default": "app/Http/Controllers",
-                    "description": "Root path to the controllers folder"
-                },
-                "laravel_jump_controller.pathNamespace": {
-                    "type": "string",
-                    "default": "App\\Http\\Controllers",
-                    "description": "Http controllers namespace"
-                }
-            }
+  "name": "laravel-jump-controller",
+  "displayName": "Laravel Jump Controller",
+  "description": "Navigate from Laravel routes to controller classes and methods.",
+  "version": "0.1.0",
+  "publisher": "pgl",
+  "author": { "name": "pgl" },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/377960738/laravel-jump-controller.git"
+  },
+  "bugs": { "url": "https://github.com/377960738/laravel-jump-controller/issues" },
+  "homepage": "https://github.com/377960738/laravel-jump-controller#readme",
+  "engines": {
+    "vscode": "^1.85.0",
+    "node": ">=18.18.2"
+  },
+  "categories": ["Programming Languages", "Other"],
+  "keywords": ["laravel", "php", "route", "goto", "jump", "controller"],
+  "galleryBanner": { "color": "#FF544A", "theme": "light" },
+  "activationEvents": ["onLanguage:php"],
+  "icon": "images/icon.png",
+  "main": "./dist/extension.js",
+  "scripts": {
+    "clean": "node scripts/clean.mjs",
+    "check": "npm run typecheck && npm test && npm run package:check",
+    "compile": "node scripts/build.mjs",
+    "watch": "node scripts/build.mjs --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "node scripts/test.mjs",
+    "test:extension": "npm run compile && node scripts/integration.mjs",
+    "package:check": "npm run compile && vsce ls --no-dependencies",
+    "package": "npm run check && vsce package --no-dependencies",
+    "vscode:prepublish": "npm run compile"
+  },
+  "dependencies": {
+    "php-parser": "3.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "18.19.120",
+    "@types/vscode": "1.85.0",
+    "@vscode/test-electron": "2.5.2",
+    "@vscode/vsce": "2.24.0",
+    "esbuild": "0.28.1",
+    "typescript": "5.9.3"
+  },
+  "overrides": {
+    "@vscode/vsce": {
+      "cheerio": "1.0.0-rc.12",
+      "markdown-it": "15.0.0"
+    }
+  },
+  "contributes": {
+    "configuration": {
+      "title": "Laravel Jump Controller",
+      "properties": {
+        "laravel_jump_controller.pathController": {
+          "type": "string",
+          "default": "app/Http/Controllers",
+          "description": "Controller directory relative to the Laravel project root."
+        },
+        "laravel_jump_controller.pathNamespace": {
+          "type": "string",
+          "default": "App\\Http\\Controllers",
+          "description": "Namespace corresponding to the configured controller directory."
         }
+      }
     },
-    "qna": "marketplace"
+    "commands": [
+      {
+        "command": "laravelJumpController.refreshIndex",
+        "title": "Laravel: Refresh Controller Index"
+      }
+    ]
+  },
+  "qna": "marketplace"
 }
