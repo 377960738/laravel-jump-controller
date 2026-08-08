@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { commands, extensions, Position, Uri, workspace } from 'vscode';
+import { commands, extensions, Position, Range, Uri, WorkspaceEdit, workspace } from 'vscode';
 
 export async function run(): Promise<void> {
   const folder = workspace.workspaceFolders?.[0];
@@ -33,6 +33,27 @@ export async function run(): Promise<void> {
     Uri.joinPath(folder.uri, 'app', 'Http', 'Controllers', 'Base', 'CrudController.php').fsPath,
   );
   assert.equal(inheritedDefinitions[0]?.range.start.line, 6);
+
+  const controllerUri = Uri.joinPath(folder.uri, 'app', 'Http', 'Controllers', 'OrderController.php');
+  const controllerDocument = await workspace.openTextDocument(controllerUri);
+  const controllerSource = controllerDocument.getText();
+  const showDeclaration = controllerSource.indexOf('function show');
+  assert.ok(showDeclaration >= 0);
+  const edit = new WorkspaceEdit();
+  edit.replace(
+    controllerUri,
+    new Range(
+      controllerDocument.positionAt(showDeclaration + 'function '.length),
+      controllerDocument.positionAt(showDeclaration + 'function show'.length),
+    ),
+    'renamedShow',
+  );
+  assert.equal(await workspace.applyEdit(edit), true);
+  assert.equal(await controllerDocument.save(), true);
+  const staleDefinitions = await commands.executeCommand<Array<unknown>>(
+    'vscode.executeDefinitionProvider', routeUri, document.positionAt(methodOffset),
+  );
+  assert.deepEqual(staleDefinitions, []);
 
   const missingRouteUri = Uri.joinPath(folder.uri, 'routes', '.integration-missing-method.php');
   const missingRoute = `<?php

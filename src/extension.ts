@@ -44,6 +44,9 @@ export function activate(context: ExtensionContext): void {
     workspace.onDidChangeTextDocument((event) => {
       if (event.document.languageId === 'php') decorations.refreshDocument(event.document);
     }),
+    workspace.onDidSaveTextDocument((document) => {
+      if (document.languageId === 'php') invalidateAndRefresh(document.uri);
+    }),
     workspace.onDidChangeConfiguration((event) => {
       if (event.affectsConfiguration('laravel_jump_controller')) {
         service.clear();
@@ -149,6 +152,7 @@ interface ResolvedLink {
 interface ParsedDocument { text: string; targets: RouteTarget[] }
 interface ResolvedDocument { text: string; links: Promise<ResolvedLink[]> }
 interface ProjectInfo { root: Uri; composer: ComposerJson }
+interface CachedFile { signature: string; contents: Promise<string | undefined> }
 type SymbolKind = 'class' | 'method';
 
 class LaravelNavigationService implements Disposable {
@@ -156,7 +160,7 @@ class LaravelNavigationService implements Disposable {
   private readonly documents = new Map<string, ParsedDocument>();
   private readonly resolvedDocuments = new Map<string, ResolvedDocument>();
   private readonly projects = new Map<string, Promise<ProjectInfo>>();
-  private readonly fileContents = new Map<string, Promise<string | undefined>>();
+  private readonly fileContents = new Map<string, CachedFile>();
   private readonly controllerRoutes = new Map<string, Set<string>>();
   private readonly routeControllers = new Map<string, Set<string>>();
 
@@ -295,15 +299,23 @@ class LaravelNavigationService implements Disposable {
     return targets;
   }
 
-  private readText(uri: Uri): Promise<string | undefined> {
+  private async readText(uri: Uri): Promise<string | undefined> {
     const key = uri.toString();
-    let pending = this.fileContents.get(key);
-    if (!pending) {
-      pending = Promise.resolve(workspace.fs.readFile(uri))
-        .then((contents) => new TextDecoder().decode(contents), () => undefined);
-      this.fileContents.set(key, pending);
+    let stat;
+    try {
+      stat = await workspace.fs.stat(uri);
+    } catch {
+      return undefined;
     }
-    return pending;
+    const signature = `${stat.mtime}:${stat.size}`;
+    let cached = this.fileContents.get(key);
+    if (!cached || cached.signature !== signature) {
+      const contents = Promise.resolve(workspace.fs.readFile(uri))
+        .then((contents) => new TextDecoder().decode(contents), () => undefined);
+      cached = { signature, contents };
+      this.fileContents.set(key, cached);
+    }
+    return cached.contents;
   }
 
   private trackDependency(route: string, controller: string): void {

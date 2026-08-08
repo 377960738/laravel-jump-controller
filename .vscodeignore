@@ -14,7 +14,7 @@ src/**
 .gitignore
 tsconfig.json
 vsc-extension-quickstart.md
-/.history
+.history/**
 !dist/extension.js
 AGENTS.md
 laravel-jump-controller.code-workspace
