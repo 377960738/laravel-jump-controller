@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { commands, DocumentLink, extensions, Position, Uri, workspace } from 'vscode';
+import { commands, extensions, Position, Uri, workspace } from 'vscode';
 
 export async function run(): Promise<void> {
   const folder = workspace.workspaceFolders?.[0];
@@ -24,11 +24,6 @@ export async function run(): Promise<void> {
   );
   assert.equal(methodDefinitions[0]?.range.start.line, 8);
 
-  const documentLinks = await commands.executeCommand<DocumentLink[]>('vscode.executeDocumentLinkProvider', routeUri);
-  assert.ok(documentLinks.some((link) => document.getText(link.range) === 'Orders'));
-  assert.ok(documentLinks.some((link) => document.getText(link.range) === 'show'));
-  assert.ok(documentLinks.every((link) => link.target?.scheme === 'file'));
-
   const missingRouteUri = Uri.joinPath(folder.uri, 'routes', '.integration-missing-method.php');
   const missingRoute = `<?php
 use App\\Http\\Controllers\\OrderController;
@@ -37,9 +32,6 @@ Route::get('/missing', [OrderController::class, 'renamedMethod']);
   await workspace.fs.writeFile(missingRouteUri, new TextEncoder().encode(missingRoute));
   try {
     const missingDocument = await workspace.openTextDocument(missingRouteUri);
-    const missingLinks = await commands.executeCommand<DocumentLink[]>('vscode.executeDocumentLinkProvider', missingRouteUri);
-    assert.ok(missingLinks.some((link) => missingDocument.getText(link.range) === 'OrderController'));
-    assert.ok(!missingLinks.some((link) => missingDocument.getText(link.range) === 'renamedMethod'));
     const missingMethodOffset = missingRoute.indexOf('renamedMethod');
     const missingDefinitions = await commands.executeCommand<Array<unknown>>(
       'vscode.executeDefinitionProvider', missingRouteUri, missingDocument.positionAt(missingMethodOffset + 2),

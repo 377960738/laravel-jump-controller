@@ -13,14 +13,14 @@ PHP TextDocument
   -> project discovery (nearest composer.json within workspace)
   -> Composer PSR-4 + compatible controller-path fallback
   -> controller PHP AST method locator
-  -> VS Code Definition + Hover + successful-target Document Links
+  -> VS Code Definition + Hover + successful-target Decorations
 ```
 
 `src/core` is editor-independent and unit tested. `src/extension.ts` adapts offsets, URIs, configuration and cancellation to VS Code.
 
 ## Why DefinitionProvider
 
-Controller navigation is a language definition operation, so `DefinitionProvider` provides the native Ctrl/Cmd-click, F12 and Peek Definition behavior. A `DocumentLinkProvider` is retained specifically for the familiar successful-match underline. Unlike the old implementation, it shares the AST, project discovery, controller content cache and exact symbol resolver with Definition and Hover; unresolved targets are not underlined.
+Controller navigation is a language definition operation, so `DefinitionProvider` provides the native Ctrl/Cmd-click, F12 and Peek Definition behavior. Successful targets are underlined with an editor `Decoration`. VS Code's `DocumentLinkProvider` invalidation event is global and replaces a document's complete link set, which caused visible whole-document refreshes after a controller changed. Decorations are applied atomically after resolution, while a reverse Controller-to-route dependency index limits refresh work to route documents that actually reference the saved Controller. Unresolved targets are not underlined.
 
 ## Parsing decision
 
@@ -42,7 +42,7 @@ Middleware, prefix and name groups do not alter controller resolution and natura
 
 The resolver walks from the route document toward its owning workspace root and selects the nearest `composer.json`. It merges `autoload.psr-4` and `autoload-dev.psr-4`, accepts string or array values, and tries longest namespaces first. Existing controller path/namespace settings remain as a compatibility fallback.
 
-All workspace I/O uses `workspace.fs`. Parsed route documents and project discovery are cached; route caches are version keyed, configuration changes clear all caches, and saved Composer documents invalidate project discovery.
+All workspace I/O uses `workspace.fs`. Parsed route documents, resolved decorations and project discovery are cached by URI and contents. Saved Controller changes invalidate only dependent route documents through a reverse dependency index. Configuration and Composer mapping changes clear the broader project caches because they can alter every class mapping.
 
 ## Artisan boundary
 
