@@ -44,14 +44,14 @@ The extension performs static PHP analysis and does not boot Laravel or execute 
 
 ## Development
 
-Requirements for the current source tree: Node.js 22 or newer and npm. The archived `0.1.0` compatibility VSIX is the final package that can be rebuilt with Node.js 18.18.2.
+Requirements for the current source tree: Node.js 22 or newer and npm. The former Node 18-specific 0.1.x maintenance line has been retired; VS Code runtime compatibility remains 1.85.0 or newer.
 
 ```bash
 npm ci --ignore-scripts
 npm run check
 ```
 
-Node 22 and 24 are covered by the current CI matrix. See [design](docs/DESIGN.md), [compatibility](docs/COMPATIBILITY.md), and [roadmap](docs/ROADMAP.md).
+Node 22 and 24 are covered by the current CI matrix. See [design](docs/DESIGN.md), [compatibility](docs/COMPATIBILITY.md), [legacy comparison](docs/LEGACY-COMPARISON.md), and [roadmap](docs/ROADMAP.md).
 
 ## License
 
