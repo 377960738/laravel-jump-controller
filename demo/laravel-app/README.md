@@ -1,6 +1,6 @@
 # Navigation demo
 
-Open this directory as a VS Code workspace and run the extension in development mode. The route files exercise controller arrays, invokable controllers, fluent controller groups, fluent resource declarations, plural resources, aliases, multiline formatting and legacy callable strings.
+Open this directory as a VS Code workspace and run the extension in development mode. The route files exercise controller arrays, invokable controllers, inherited methods, fluent controller groups, fluent resource declarations with `only()`, plural resources, aliases, multiline formatting and legacy callable strings.
 
 Verification checklist:
 
@@ -11,3 +11,4 @@ Verification checklist:
 5. `routes/api.php` verifies the reported fluent resource regression.
 6. `routes/shared.php` reproduces GitHub Issue #3 verbatim.
 7. `routes/legacy.php` verifies configuration fallback and old string callable syntax.
+8. `routes/web.php` verifies inherited method navigation and individual resource methods declared by `only()`.

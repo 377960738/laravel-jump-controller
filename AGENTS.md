@@ -15,9 +15,9 @@ Run `npm run check` before committing behavior or dependency changes. New route 
 
 ## Compatibility
 
-- Build baseline: Node.js 22.0.0. Release changes must also pass Node.js 24.
+- Build baseline: Node.js 24.0.0.
 - Runtime baseline: VS Code 1.85.0. Do not use newer API without either raising `engines.vscode` deliberately or providing a guarded fallback.
-- npm is the sole package manager. Commit `package-lock.json`; do not add another lock file. The only maintained release line is 0.2.x on Node.js 22+.
+- npm is the sole package manager. Use any npm version compatible with Node.js 24, commit `package-lock.json`, and do not add another lock file. The only maintained release line is 0.2.x on Node.js 24+.
 
 ## Git and generated files
 

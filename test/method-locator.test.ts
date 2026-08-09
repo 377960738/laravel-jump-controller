@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { locateClass, locateMethod, parentClassName } from '../src/core/method-locator';
+import { controllerSnapshot, controllerSymbolChanged, locateClass, locateMethod, parentClassName } from '../src/core/method-locator';
 
 describe('locateMethod', () => {
   it('finds formatted methods and __invoke using PHP AST', () => {
@@ -44,5 +44,33 @@ final class OrderController extends BaseController {}`;
       parentClassName('<?php namespace App\\Http; class Child extends \\Framework\\BaseController {}', 'Child'),
       'Framework\\BaseController',
     );
+  });
+});
+
+describe('controllerSnapshot', () => {
+  it('summarizes class, inherited parent and method declaration offsets', () => {
+    const source = `<?php
+namespace App\\Http\\Controllers;
+use App\\Http\\Controllers\\Base\\CrudController as BaseController;
+final class OrderController extends BaseController {
+  public function index(): void {}
+  public function show(): void {}
+}`;
+    const snapshot = controllerSnapshot(source)?.get('ordercontroller');
+    assert.ok(snapshot);
+    assert.equal(snapshot.parent, 'App\\Http\\Controllers\\Base\\CrudController');
+    assert.equal(snapshot.offset, source.indexOf('OrderController'));
+    assert.equal(snapshot.methods.get('index'), source.indexOf('index'));
+    assert.equal(snapshot.methods.get('show'), source.indexOf('show'));
+  });
+
+  it('isolates one renamed method in a large controller snapshot', () => {
+    const methods = Array.from({ length: 150 }, (_, index) => `public function method${index}(): void {}`).join('\n');
+    const before = controllerSnapshot(`<?php class LargeController { ${methods} }`);
+    const after = controllerSnapshot(`<?php class LargeController { ${methods.replace('method73', 'change73')} }`);
+    assert.equal(controllerSymbolChanged(before, after, 'LargeController'), false);
+    assert.equal(controllerSymbolChanged(before, after, 'LargeController', 'method72'), false);
+    assert.equal(controllerSymbolChanged(before, after, 'LargeController', 'method73'), true);
+    assert.equal(controllerSymbolChanged(before, after, 'LargeController', 'method74'), false);
   });
 });

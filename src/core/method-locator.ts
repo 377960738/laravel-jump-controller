@@ -10,6 +10,43 @@ interface LocationLike { start: { offset: number }; end: { offset: number } }
 
 const parser = new PhpParser({ parser: { suppressErrors: true }, ast: { withPositions: true } });
 
+export interface ControllerClassSnapshot {
+  offset: number;
+  parent?: string;
+  methods: ReadonlyMap<string, number>;
+}
+
+export type ControllerSnapshot = ReadonlyMap<string, ControllerClassSnapshot>;
+
+export function controllerSnapshot(source: string): ControllerSnapshot | undefined {
+  let ast: unknown;
+  try {
+    ast = parser.parseCode(source, 'controller.php');
+  } catch {
+    return undefined;
+  }
+  const classes = new Map<string, ControllerClassSnapshot>();
+  collectClassSnapshots(ast, classes);
+  for (const [name, snapshot] of classes) {
+    classes.set(name, { ...snapshot, parent: parentClassName(source, name) });
+  }
+  return classes;
+}
+
+export function controllerSymbolChanged(
+  previous: ControllerSnapshot | undefined,
+  next: ControllerSnapshot | undefined,
+  className: string,
+  method?: string,
+): boolean {
+  if (!previous || !next) return true;
+  const normalizedClass = className.split('\\').at(-1)?.toLowerCase() ?? '';
+  const before = previous.get(normalizedClass);
+  const after = next.get(normalizedClass);
+  if (!before || !after || before.offset !== after.offset || before.parent !== after.parent) return true;
+  return method === undefined ? false : before.methods.get(method.toLowerCase()) !== after.methods.get(method.toLowerCase());
+}
+
 export function locateMethod(source: string, method: string, className?: string): number | undefined {
   let ast: unknown;
   try {
@@ -101,6 +138,39 @@ function findClassNode(value: unknown, expectedName?: string): NodeLike | undefi
     }
   }
   return undefined;
+}
+
+function collectClassSnapshots(value: unknown, classes: Map<string, ControllerClassSnapshot>): void {
+  if (!isNode(value)) return;
+  if (value.kind === 'class') {
+    const name = typeof value.name === 'string' ? value.name : value.name?.name;
+    if (name) {
+      const methods = new Map<string, number>();
+      collectDirectMethods(value.body, methods);
+      const parent = isNode(value.extends) && typeof value.extends.name === 'string'
+        ? value.extends.name.toLowerCase()
+        : undefined;
+      classes.set(name.toLowerCase(), { offset: nameOffset(value) ?? -1, parent, methods });
+    }
+    return;
+  }
+  for (const [key, child] of Object.entries(value)) {
+    if (key === 'loc') continue;
+    if (Array.isArray(child)) {
+      for (const item of child) collectClassSnapshots(item, classes);
+    } else {
+      collectClassSnapshots(child, classes);
+    }
+  }
+}
+
+function collectDirectMethods(value: unknown, methods: Map<string, number>): void {
+  if (!Array.isArray(value)) return;
+  for (const item of value) {
+    if (!isNode(item) || item.kind !== 'method') continue;
+    const name = typeof item.name === 'string' ? item.name : item.name?.name;
+    if (name) methods.set(name.toLowerCase(), nameOffset(item) ?? -1);
+  }
 }
 
 function nameOffset(node: NodeLike): number | undefined {

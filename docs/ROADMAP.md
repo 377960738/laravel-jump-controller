@@ -6,11 +6,11 @@
 - esbuild extension bundle and isolated Node test runner.
 - PHP AST route parsing with exact source ranges.
 - Native Definition and shared Hover providers.
-- Atomic Decoration underlines with Controller-to-route reverse dependencies.
+- Atomic Decoration underlines with method-level Controller-to-target reverse dependencies and per-target caches.
 - Composer PSR-4 resolution, nested project discovery and scoped settings.
 - Safe caches, saved-file invalidation and filesystem-signature validation.
 - Inherited parent method navigation and resource `only()` method links.
-- Node 22/24 CI and a VS Code 1.85.2 Extension Host fixture job.
+- Node 24 CI and a VS Code 1.85.2 Extension Host fixture job.
 
 ## Next hardening milestones
 

@@ -17,9 +17,9 @@
 
 项目唯一维护线为 0.2.x：
 
-- 构建 Node.js：22 或更新版本；
-- CI 额外验证 Node.js 24；
-- npm：跟随 Node.js 安装；
+- 构建 Node.js：24 或更新版本；
+- CI 验证 Node.js 24；
+- npm：任意与 Node.js 24 兼容的版本；项目不精确锁定 npm 版本；
 - 插件运行最低版本：VS Code 1.85.0；
 - PHP、Composer、Laravel、Artisan：测试和构建均不要求安装。
 
@@ -40,7 +40,7 @@ npm ci --ignore-scripts
 
 ## 3. 推荐的日常开发循环
 
-1. 切换到 `develop`，确认 `git status` 没有意外修改。
+1. 切换到当前维护分支 `release/0.2.x`，确认 `git status` 没有意外修改。
 2. 为问题添加最小复现：优先放入 `test/*.test.ts`，完整 Laravel 场景放入 `demo/laravel-app`。
 3. 修改 `src/core` 或 `src/extension.ts`。
 4. 先运行目标测试，再运行 `npm run check`。
@@ -68,7 +68,8 @@ npm run check
 
 - `route-parser.test.ts`：Laravel 路由语法到 `RouteTarget`；
 - `composer.test.ts`：Composer PSR-4 到候选文件；
-- `method-locator.test.ts`：类、方法和父类名称定位；
+- `method-locator.test.ts`：类、方法、父类名称定位，以及 Controller 方法级 AST 快照与差异检测；
+- `target-cache.test.ts`：单目标缓存及其失效行为；
 - `demo.test.ts`：Demo 中每个解析目标都必须对应真实 Controller/方法。
 
 增加路由语法时，至少添加一个精确 parser 测试。增加跨文件能力时，同时添加 Demo Controller 和路由，避免只有虚构字符串的单一测试。
@@ -189,7 +190,7 @@ npm run package
 指定输出文件更适合发布：
 
 ```bash
-npx vsce package --no-dependencies --out build/laravel-jump-controller-0.2.x-node22.vsix
+npx vsce package --no-dependencies --out build/laravel-jump-controller-0.2.x-node24.vsix
 ```
 
 在 VS Code 中运行 `Extensions: Install from VSIX...` 安装。安装新包后最好执行 `Developer: Reload Window`，并在扩展详情页确认实际版本，避免把旧 Extension Host 缓存误认为代码问题。
@@ -198,7 +199,7 @@ npx vsce package --no-dependencies --out build/laravel-jump-controller-0.2.x-nod
 
 GitHub Actions 包含：
 
-- Node 22、24 的 `npm run check`；
+- Node 24 的 `npm run check`；
 - Linux/Xvfb 下的 VS Code 1.85.2 Extension Host 测试。
 
 本地 `npm run check` 通过不代表 Electron 集成一定通过；Extension Host 测试通过也不能代替静态类型和打包检查。发布前两组都必须成功。
@@ -210,7 +211,7 @@ GitHub Actions 包含：
 1. 确认 Controller 已保存；
 2. 确认安装的是最新 VSIX 版本；
 3. 执行 `Developer: Reload Window`；
-4. 运行命令 `Laravel Jump Controller: Refresh Index`；
+4. 运行命令 `Laravel: Refresh Controller Index`；
 5. 将场景加入 `test/suite.ts`，不要只依赖人工观察。
 
 ### 有下划线但 F12 无结果
