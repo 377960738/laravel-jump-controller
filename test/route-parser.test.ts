@@ -68,10 +68,23 @@ Route::post('/b', 'Admin\\UserController::store');`;
     ]);
   });
 
+  it('parses Lumen and Dingo instance router calls from issue #6', () => {
+    const source = `<?php
+$api->get('member/value_level/detail', 'App\\Http\\Controllers\\V1\\Member\\InfoController@valueLevelAction');
+$router->post('/jobs', [JobController::class, 'store']);
+$app->put('/users/{user}', 'UserController@update');`;
+    assert.deepEqual(parser.parse(source).targets.map(({ controller, method }) => ({ controller, method })), [
+      { controller: 'App\\Http\\Controllers\\V1\\Member\\InfoController', method: 'valueLevelAction' },
+      { controller: 'JobController', method: 'store' },
+      { controller: 'UserController', method: 'update' },
+    ]);
+  });
+
   it('ignores closures and unrelated static calls', () => {
     const source = `<?php
 Route::get('/health', fn () => 'ok');
-Other::get('/x', [WrongController::class, 'index']);`;
+Other::get('/x', [WrongController::class, 'index']);
+$client->get('/x', [WrongController::class, 'index']);`;
     assert.deepEqual(parser.parse(source).targets, []);
   });
 

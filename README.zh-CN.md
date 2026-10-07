@@ -97,6 +97,18 @@ Route::any('/', ['Home\Index', 'index'])->withoutMiddleware(VerifyCsrfToken::cla
 Route::match(['get', 'put'], '/', ['Home\Index', 'index'])->withoutMiddleware(VerifyCsrfToken::class);
 ```
 
+### Lumen 与 Dingo API 路由器
+
+除 Laravel 门面外，也支持常见的实例路由器变量：
+
+```php
+$router->get('/users', 'App\Http\Controllers\UserController@index');
+$app->post('/users', [UserController::class, 'store']);
+$api->get('/profile', 'App\Http\Controllers\ProfileController@show');
+```
+
+仅将 `$router`、`$app` 和 `$api` 识别为路由器实例，避免把 `$client->get()` 等无关对象方法误判为路由。
+
 ## ⚙️ Controller 发现
 
 扩展读取最近 `composer.json` 中的 `autoload.psr-4` 和 `autoload-dev.psr-4`。支持字符串和多目录映射，并优先尝试最长的匹配命名空间。

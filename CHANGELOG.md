@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.2.5 - October 07, 2026
+
+- Resolve controller actions in conventional Lumen and Dingo API instance routers (`$router`, `$app` and `$api`), fixing [#6](https://github.com/377960738/laravel-jump-controller/issues/6) without treating arbitrary object calls as routes.
+
 ## 0.2.4 - August 09, 2026
 
 - Recompute only route targets affected by a saved Controller class or method, using PHP AST snapshots, method-level reverse dependencies and per-target resolution caches while retaining atomic decoration updates.

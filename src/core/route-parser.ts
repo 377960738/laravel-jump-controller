@@ -16,6 +16,7 @@ const ROUTE_METHODS = new Set([
 ]);
 const RESOURCE_METHODS = new Set(['resource', 'apiResource', 'singleton', 'apiSingleton']);
 const PLURAL_RESOURCE_METHODS = new Set(['resources', 'apiResources']);
+const ROUTER_VARIABLES = new Set(['api', 'app', 'router']);
 
 export class LaravelRouteParser {
   private readonly parser = new PhpParser({
@@ -222,7 +223,11 @@ function getRouteCall(call: PhpNode, aliases: ReadonlyMap<string, string>): { me
   if (direct) return direct;
   if (call.kind !== 'call' || !isNode(call.what) || call.what.kind !== 'propertylookup') return undefined;
   const method = identifierName(call.what.offset);
-  return method && isRouteChain(call.what.what, aliases) ? { method } : undefined;
+  return method && (isRouteChain(call.what.what, aliases) || isRouterVariable(call.what.what)) ? { method } : undefined;
+}
+
+function isRouterVariable(value: unknown): boolean {
+  return isNode(value) && value.kind === 'variable' && typeof value.name === 'string' && ROUTER_VARIABLES.has(value.name);
 }
 
 function isRouteChain(value: unknown, aliases: ReadonlyMap<string, string>): boolean {

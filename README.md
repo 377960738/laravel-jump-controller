@@ -97,6 +97,18 @@ Route::any('/', ['Home\Index', 'index'])->withoutMiddleware(VerifyCsrfToken::cla
 Route::match(['get', 'put'], '/', ['Home\Index', 'index'])->withoutMiddleware(VerifyCsrfToken::class);
 ```
 
+### Lumen and Dingo API routers
+
+Conventional instance router variables are supported alongside the Laravel facade:
+
+```php
+$router->get('/users', 'App\Http\Controllers\UserController@index');
+$app->post('/users', [UserController::class, 'store']);
+$api->get('/profile', 'App\Http\Controllers\ProfileController@show');
+```
+
+Only `$router`, `$app` and `$api` are treated as router instances, avoiding false matches on unrelated object methods such as `$client->get()`.
+
 ## ⚙️ Controller discovery
 
 The extension reads `autoload.psr-4` and `autoload-dev.psr-4` from the nearest `composer.json`. String and multi-directory mappings are supported, and the longest matching namespace is tried first.
